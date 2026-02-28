@@ -1,28 +1,31 @@
 <template>
   <AppLayout>
     <div class="min-h-screen flex flex-col">
-      <!-- Main Content -->
       <div class="flex-1 px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
-        
+
         <!-- Page Header -->
         <div class="mb-4 sm:mb-6 lg:mb-8">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
             <div>
               <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Student Management</h1>
-              <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">Manage all registered students</p>
+              <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">Manage all student records</p>
             </div>
-            <Link :href="route('students.create')">
-              <Button variant="primary" class="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-200">
-                <PlusIcon class="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                <span class="text-sm sm:text-base">Add New Student</span>
-              </Button>
-            </Link>
+            <Button
+              @click="$inertia.visit(route('students.create'))"
+              variant="primary"
+              class="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all text-sm"
+            >
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Add New Student
+            </Button>
           </div>
         </div>
 
         <!-- Filters Card -->
         <div class="bg-white rounded-lg sm:rounded-xl shadow-md p-4 sm:p-6 mb-4 sm:mb-6">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div>
               <Input
                 v-model="filters.search"
@@ -31,64 +34,65 @@
                 class="w-full text-sm"
               />
             </div>
-            
+
             <div>
               <select
-                v-model="filters.status"
+                v-model="filters.is_active"
                 @change="loadData"
                 class="w-full px-3 sm:px-4 py-2 text-sm border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All Status</option>
-                <option v-for="status in statusOptions" :key="status" :value="status">
-                  {{ status.charAt(0).toUpperCase() + status.slice(1) }}
-                </option>
+                <option value="1">Active</option>
+                <option value="0">Inactive</option>
               </select>
             </div>
 
             <div>
               <select
-                v-model="filters.class_id"
+                v-model="filters.student_type"
                 @change="loadData"
                 class="w-full px-3 sm:px-4 py-2 text-sm border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">All Classes</option>
-                <option v-for="cls in classes" :key="cls.id" :value="cls.id">
-                  {{ cls.name }}
-                </option>
+                <option value="">All Types</option>
+                <option value="school">School</option>
+                <option value="academy">Academy</option>
+                <option value="both">Both</option>
               </select>
             </div>
 
             <div>
               <select
-                v-model="filters.branch_id"
+                v-model="filters.gender"
                 @change="loadData"
                 class="w-full px-3 sm:px-4 py-2 text-sm border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">All Branches</option>
-                <option v-for="branch in branches" :key="branch.id" :value="branch.id">
-                  {{ branch.name }}
-                </option>
+                <option value="">All Genders</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
               </select>
             </div>
 
-            <Button 
-              variant="secondary" 
-              @click="resetFilters"
-              class="w-full sm:w-auto shadow-sm hover:shadow-md transition-all duration-200 text-sm"
-            >
-              Reset Filters
-            </Button>
+            <div class="sm:col-span-2 lg:col-span-4 flex justify-end">
+              <Button
+                variant="secondary"
+                @click="resetFilters"
+                class="w-full sm:w-auto shadow-sm hover:shadow-md transition-all duration-200 text-sm"
+              >
+                Reset Filters
+              </Button>
+            </div>
           </div>
         </div>
 
         <!-- Desktop/Tablet Table View -->
         <div class="hidden md:block bg-white rounded-lg sm:rounded-xl shadow-lg overflow-hidden">
-          <!-- Table Header with Search -->
+          <!-- Table Header -->
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50 gap-3">
             <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <span class="text-xs sm:text-sm text-gray-700">Show</span>
-              <select 
-                v-model="perPage" 
+              <select
+                v-model="perPage"
                 @change="changePerPage"
                 class="px-3 sm:px-6 py-1.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
               >
@@ -121,33 +125,16 @@
             <table id="students-table" class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gradient-to-r from-indigo-50 to-blue-50">
                 <tr>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    #
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Admission No
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Student Name
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Roll No
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Class / Section
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Contact
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Branch
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">#</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Admission No</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Student Name</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Father Name</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Date of Birth</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Gender</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Type</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Hafiz</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Status</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Actions</th>
                 </tr>
               </thead>
               <tbody class="bg-white text-center divide-y divide-gray-100">
@@ -158,12 +145,8 @@
 
           <!-- Table Footer -->
           <div class="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 bg-gray-50 gap-3 sm:gap-4">
-            <div class="text-xs sm:text-sm text-gray-600" id="table-info">
-              <!-- Info will be inserted here -->
-            </div>
-            <div id="table-pagination">
-              <!-- Pagination will be inserted here -->
-            </div>
+            <div class="text-xs sm:text-sm text-gray-600" id="table-info"></div>
+            <div id="table-pagination"></div>
           </div>
         </div>
 
@@ -173,7 +156,7 @@
           <div v-if="mobileLoading" class="flex items-center justify-center py-12 bg-white rounded-lg shadow">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
           </div>
-          
+
           <!-- Empty State -->
           <div v-else-if="mobileStudents.length === 0" class="text-center py-12 bg-white rounded-lg shadow">
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -191,12 +174,12 @@
                 <div class="flex-1">
                   <div class="flex items-center gap-2">
                     <span class="text-xs font-semibold text-gray-500">#{{ mobileOffset + index + 1 }}</span>
-                    <h3 class="text-base font-semibold text-gray-900">{{ student.full_name }}</h3>
+                    <h3 class="text-base font-semibold text-gray-900">{{ student.student_name }}</h3>
                   </div>
-                  <p class="text-xs text-gray-500 mt-0.5">Admission: {{ student.admission_no }}</p>
+                  <p class="text-xs text-gray-500 mt-0.5">{{ student.admission_no || 'No Admission No' }}</p>
                 </div>
-                <span :class="getStatusClass(student.status)" class="px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ml-2">
-                  {{ formatStatus(student.status) }}
+                <span :class="getStatusClass(student.is_active)" class="px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ml-2">
+                  {{ student.is_active ? 'Active' : 'Inactive' }}
                 </span>
               </div>
 
@@ -204,44 +187,47 @@
               <div class="space-y-2 border-t border-gray-100 pt-3">
                 <div class="flex items-center text-xs sm:text-sm">
                   <svg class="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                   </svg>
-                  <span class="text-gray-600">Roll No: {{ student.roll_no || 'N/A' }}</span>
-                </div>
-                
-                <div class="flex items-center text-xs sm:text-sm">
-                  <svg class="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                  </svg>
-                  <span class="text-gray-600">{{ student.class_section }}</span>
+                  <span class="text-gray-600">Father: {{ student.parent?.father_name || 'N/A' }}</span>
                 </div>
 
                 <div class="flex items-center text-xs sm:text-sm">
                   <svg class="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                   </svg>
-                  <span class="text-gray-600">{{ student.father_phone || 'N/A' }}</span>
+                  <span class="text-gray-600">DOB: {{ formatDate(student.date_of_birth) }}</span>
                 </div>
 
                 <div class="flex items-center text-xs sm:text-sm">
                   <svg class="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                   </svg>
-                  <span class="text-gray-600">{{ student.branch || 'N/A' }}</span>
+                  <span class="text-gray-600 capitalize">{{ student.gender || 'N/A' }}</span>
+                </div>
+
+                <div class="flex items-center gap-2 text-xs sm:text-sm">
+                  <span :class="getTypeClass(student.student_type)" class="px-2 py-0.5 text-xs font-medium rounded-full capitalize">
+                    {{ student.student_type || 'N/A' }}
+                  </span>
+                  <span v-if="student.is_hafiz" class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                    Hafiz
+                  </span>
                 </div>
               </div>
 
               <!-- Actions -->
               <div class="flex gap-2 mt-4 pt-3 border-t border-gray-100">
-                <Link :href="route('students.edit', student.id)" class="flex-1">
-                  <button class="w-full px-3 py-2 text-xs sm:text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                    Edit
-                  </button>
-                </Link>
-                <button 
+                <button
+                  @click="$inertia.visit(route('students.edit', student.id))"
+                  class="flex-1 px-3 py-2 text-xs sm:text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                  Edit
+                </button>
+                <button
                   @click="() => { studentToDelete = student.id; showDeleteModal = true; }"
                   class="flex-1 px-3 py-2 text-xs sm:text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center gap-1"
                 >
@@ -258,7 +244,7 @@
         <!-- Mobile Pagination -->
         <div v-if="mobileStudents.length > 0" class="md:hidden mt-4 bg-white rounded-lg shadow p-3">
           <div class="flex items-center justify-between">
-            <button 
+            <button
               @click="prevPage"
               :disabled="mobileCurrentPage === 1 || mobileLoading"
               class="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white hover:bg-gray-50 transition-colors flex items-center gap-1"
@@ -268,13 +254,13 @@
               </svg>
               Previous
             </button>
-            
+
             <div class="text-center">
               <div class="text-sm font-medium text-gray-900">Page {{ mobileCurrentPage }} of {{ mobileTotalPages }}</div>
               <div class="text-xs text-gray-500 mt-0.5">{{ mobileTotal }} total students</div>
             </div>
-            
-            <button 
+
+            <button
               @click="nextPage"
               :disabled="mobileCurrentPage === mobileTotalPages || mobileLoading"
               class="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white hover:bg-gray-50 transition-colors flex items-center gap-1"
@@ -295,29 +281,29 @@
           <div class="flex items-center">
             <div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-red-100 flex items-center justify-center mr-3 sm:mr-4">
               <svg class="w-5 h-5 sm:w-6 sm:h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
               </svg>
             </div>
             <span class="text-base sm:text-lg font-semibold text-gray-900">Delete Student</span>
           </div>
         </template>
-        
+
         <p class="text-xs sm:text-sm text-gray-600 mt-2">
           Are you sure you want to delete this student? This action cannot be undone.
         </p>
 
         <template #footer>
           <div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="secondary"
               @click="showDeleteModal = false"
               class="w-full sm:w-auto px-4 sm:px-6 shadow-sm hover:shadow-md transition-all text-sm"
             >
               Cancel
             </Button>
-            <Button 
-              variant="danger" 
-              @click="confirmDelete" 
+            <Button
+              variant="danger"
+              @click="confirmDelete"
               :loading="deleting"
               class="w-full sm:w-auto px-4 sm:px-6 shadow-md hover:shadow-lg transition-all text-sm"
             >
@@ -333,27 +319,16 @@
 
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { router } from '@inertiajs/vue3'
 import AppLayout from '@/Components/Layout/AppLayout.vue'
 import Button from '@/Components/Common/Button.vue'
 import Input from '@/Components/Forms/Input.vue'
 import Modal from '@/Components/Common/Modal.vue'
-import { PlusIcon } from '@heroicons/vue/24/outline'
 import $ from 'jquery'
 import 'datatables.net'
 import axios from 'axios'
 
-const props = defineProps({
-  branches: {
-    type: Array,
-    default: () => []
-  },
-  classes: {
-    type: Array,
-    default: () => []
-  }
-})
-
+// State
 const showDeleteModal = ref(false)
 const deleting = ref(false)
 const studentToDelete = ref(null)
@@ -367,69 +342,65 @@ const mobileTotal = ref(0)
 const mobileOffset = ref(0)
 let table = null
 
+// ✅ Matches controller exactly: search, is_active, student_type, gender
 const filters = reactive({
   search: '',
-  status: '',
-  class_id: '',
-  branch_id: ''
+  is_active: '',
+  student_type: '',
+  gender: ''
 })
 
-const statusOptions = ['active', 'inactive', 'alumni', 'transferred']
-
 // Helper functions
-const getStatusClass = (status) => {
-  const classes = {
-    'active': 'bg-green-100 text-green-800',
-    'inactive': 'bg-gray-100 text-gray-800',
-    'alumni': 'bg-blue-100 text-blue-800',
-    'transferred': 'bg-yellow-100 text-yellow-800'
+const getStatusClass = (isActive) => {
+  return isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+}
+
+const getTypeClass = (type) => {
+  const map = {
+    school:  'bg-blue-100 text-blue-800',
+    academy: 'bg-purple-100 text-purple-800',
+    both:    'bg-indigo-100 text-indigo-800',
   }
-  return classes[status] || 'bg-gray-100 text-gray-800'
+  return map[type] || 'bg-gray-100 text-gray-800'
 }
 
-const formatStatus = (status) => {
-  return status.charAt(0).toUpperCase() + status.slice(1)
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
-// Load mobile data using axios
+// Load mobile data
 const loadMobileData = async () => {
   mobileLoading.value = true
-  
   try {
     const params = {
       page: mobileCurrentPage.value,
       per_page: perPage.value,
       mobile: 1
     }
-    
-    if (filters.search) params.search = filters.search
-    if (tableSearch.value) params.search = tableSearch.value
-    if (filters.status) params.status = filters.status
-    if (filters.class_id) params.class_id = filters.class_id
-    if (filters.branch_id) params.branch_id = filters.branch_id
-    
+    if (filters.search)       params.search       = filters.search
+    if (tableSearch.value)    params.search       = tableSearch.value
+    if (filters.is_active !== '') params.is_active = filters.is_active
+    if (filters.student_type) params.student_type = filters.student_type
+    if (filters.gender)       params.gender       = filters.gender
+
     const response = await axios.get(route('students.index'), {
       params,
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-        'Accept': 'application/json'
-      }
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
     })
-    
-    if (response.data) {
-      // Handle Laravel pagination response
-      if (response.data.data) {
-        mobileStudents.value = response.data.data
-        mobileCurrentPage.value = response.data.current_page || 1
-        mobileTotalPages.value = response.data.last_page || 1
-        mobileTotal.value = response.data.total || 0
-        mobileOffset.value = response.data.from ? response.data.from - 1 : 0
-      } else if (Array.isArray(response.data)) {
-        mobileStudents.value = response.data
-        mobileTotalPages.value = 1
-        mobileTotal.value = response.data.length
-        mobileOffset.value = 0
-      }
+
+    if (response.data?.data) {
+      mobileStudents.value = response.data.data
+      mobileCurrentPage.value = response.data.current_page || 1
+      mobileTotalPages.value = response.data.last_page || 1
+      mobileTotal.value = response.data.total || 0
+      mobileOffset.value = response.data.from ? response.data.from - 1 : 0
+    } else if (Array.isArray(response.data)) {
+      mobileStudents.value = response.data
+      mobileTotalPages.value = 1
+      mobileTotal.value = response.data.length
+      mobileOffset.value = 0
     }
   } catch (error) {
     console.error('Error loading mobile data:', error)
@@ -440,34 +411,34 @@ const loadMobileData = async () => {
   }
 }
 
-// Initialize on mount
+// Initialize
 onMounted(() => {
-  // Load mobile data first
   loadMobileData()
 
-  // Initialize desktop table
   table = $('#students-table').DataTable({
     processing: true,
     serverSide: true,
     ajax: {
       url: route('students.index'),
-      data: function(d) {
+      data: function (d) {
+        // ✅ Pass all filters exactly as controller reads them
         d.search.value = filters.search || tableSearch.value
-        d.status = filters.status
-        d.class_id = filters.class_id
-        d.branch_id = filters.branch_id
+        if (filters.is_active !== '') d.is_active    = filters.is_active
+        if (filters.student_type)     d.student_type = filters.student_type
+        if (filters.gender)           d.gender       = filters.gender
       }
     },
     columns: [
-      { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-      { data: 'admission_no', name: 'admission_no' },
-      { data: 'full_name', name: 'full_name' },
-      { data: 'roll_no', name: 'roll_no' },
-      { data: 'class_section', name: 'class_section', orderable: false },
-      { data: 'father_phone', name: 'father_phone' },
-      { data: 'branch', name: 'branch', orderable: false },
-      { data: 'status', name: 'status' },
-      { data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-center' }
+      { data: 'DT_RowIndex',   name: 'DT_RowIndex',   orderable: false, searchable: false },
+      { data: 'admission_no',  name: 'admission_no' },
+      { data: 'student_name',  name: 'student_name' },
+      { data: 'father_name',   name: 'father_name',   orderable: false },
+      { data: 'date_of_birth', name: 'date_of_birth' },
+      { data: 'gender',        name: 'gender' },
+      { data: 'student_type',  name: 'student_type' },
+      { data: 'is_hafiz',      name: 'is_hafiz',      orderable: false },
+      { data: 'is_active',     name: 'is_active',     orderable: false },
+      { data: 'action',        name: 'action',        orderable: false, searchable: false, className: 'text-center' }
     ],
     pageLength: 10,
     lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
@@ -475,7 +446,6 @@ onMounted(() => {
     searching: true,
     info: true,
     responsive: true,
-    
     dom: '<"flex items-center justify-between border-b border-gray-200"<"ml-auto"i>>rt<"flex items-center justify-between px-6 py-4 border-t border-gray-200"<"text-sm text-gray-600"i>p>',
     language: {
       emptyTable: '<div class="text-center py-12 text-gray-500"><svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg><p class="mt-2 text-sm font-medium">No students found</p></div>',
@@ -491,85 +461,24 @@ onMounted(() => {
       }
     },
     drawCallback: function () {
-      const info = $('#students-table_info')
-      $('#table-info').empty().append(info)
-
-      const paginate = $('#students-table_paginate')
-      $('#table-pagination').empty().append(paginate)
+      $('#table-info').empty().append($('#students-table_info'))
+      $('#table-pagination').empty().append($('#students-table_paginate'))
     }
-  })
-
-  $('#students-table').on('click', '[data-delete]', function() {
-    const id = $(this).data('delete')
-    studentToDelete.value = id
-    showDeleteModal.value = true
   })
 })
 
-// Mobile pagination
-const prevPage = () => {
-  if (mobileCurrentPage.value > 1 && !mobileLoading.value) {
-    mobileCurrentPage.value--
-    loadMobileData()
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+// ✅ window.editStudent — controller action calls editStudent({id})
+window.editStudent = (student) => {
+  router.visit(route('students.edit', student.id))
 }
 
-const nextPage = () => {
-  if (mobileCurrentPage.value < mobileTotalPages.value && !mobileLoading.value) {
-    mobileCurrentPage.value++
-    loadMobileData()
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+// ✅ window.deleteStudent — controller action calls deleteStudent(id)
+window.deleteStudent = (id) => {
+  studentToDelete.value = id
+  showDeleteModal.value = true
 }
 
-// Table search with debounce
-let tableSearchTimeout = null
-const tableSearchDebounced = () => {
-  clearTimeout(tableSearchTimeout)
-  tableSearchTimeout = setTimeout(() => {
-    loadData()
-  }, 500)
-}
-
-// Filter search with debounce
-let searchTimeout = null
-const searchDebounced = () => {
-  clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    loadData()
-  }, 500)
-}
-
-// Change per page
-const changePerPage = () => {
-  if (table) {
-    table.page.len(perPage.value).draw()
-  }
-  mobileCurrentPage.value = 1
-  loadMobileData()
-}
-
-// Reload table
-const loadData = () => {
-  if (table) {
-    table.ajax.reload()
-  }
-  mobileCurrentPage.value = 1
-  loadMobileData()
-}
-
-// Reset filters
-const resetFilters = () => {
-  filters.search = ''
-  filters.status = ''
-  filters.class_id = ''
-  filters.branch_id = ''
-  tableSearch.value = ''
-  loadData()
-}
-
-// Delete student
+// Delete
 const confirmDelete = () => {
   deleting.value = true
   router.delete(route('students.destroy', studentToDelete.value), {
@@ -578,15 +487,58 @@ const confirmDelete = () => {
       deleting.value = false
       loadData()
     },
-    onError: () => {
-      deleting.value = false
-    }
+    onError: () => { deleting.value = false }
   })
 }
 
-window.deleteStudent = (id) => {
-  studentToDelete.value = id
-  showDeleteModal.value = true
+// Pagination
+const prevPage = () => {
+  if (mobileCurrentPage.value > 1 && !mobileLoading.value) {
+    mobileCurrentPage.value--
+    loadMobileData()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+const nextPage = () => {
+  if (mobileCurrentPage.value < mobileTotalPages.value && !mobileLoading.value) {
+    mobileCurrentPage.value++
+    loadMobileData()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
+// Debounced search
+let tableSearchTimeout = null
+const tableSearchDebounced = () => {
+  clearTimeout(tableSearchTimeout)
+  tableSearchTimeout = setTimeout(() => loadData(), 500)
+}
+
+let searchTimeout = null
+const searchDebounced = () => {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => loadData(), 500)
+}
+
+const changePerPage = () => {
+  if (table) table.page.len(perPage.value).draw()
+  mobileCurrentPage.value = 1
+  loadMobileData()
+}
+
+const loadData = () => {
+  if (table) table.ajax.reload()
+  mobileCurrentPage.value = 1
+  loadMobileData()
+}
+
+const resetFilters = () => {
+  filters.search = ''
+  filters.is_active = ''
+  filters.student_type = ''
+  filters.gender = ''
+  tableSearch.value = ''
+  loadData()
 }
 </script>
 
@@ -596,14 +548,12 @@ window.deleteStudent = (id) => {
   color: #4b5563;
   font-weight: 500;
 }
-
 :deep(.dataTables_paginate) {
   display: flex;
   justify-content: flex-end;
   gap: 0.25rem;
   flex-wrap: wrap;
 }
-
 :deep(.paginate_button) {
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
@@ -615,59 +565,45 @@ window.deleteStudent = (id) => {
   cursor: pointer;
   transition: all 0.2s;
 }
-
 :deep(.paginate_button:hover:not(.disabled)) {
   background: #f3f4f6;
   border-color: #9ca3af;
 }
-
 :deep(.paginate_button.current) {
   background: #2563eb;
   color: white;
   border-color: #2563eb;
 }
-
 :deep(.paginate_button.current:hover) {
   background: #1d4ed8;
   border-color: #1d4ed8;
 }
-
 :deep(.paginate_button.disabled) {
   opacity: 0.5;
   cursor: not-allowed;
   background: #f9fafb;
 }
-
 :deep(#students-table_info),
 :deep(#students-table_paginate) {
   display: none;
 }
-
 #table-info :deep(.dataTables_info),
 #table-pagination :deep(.dataTables_paginate) {
   display: block;
 }
-
 :deep(#students-table tbody td) {
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
 }
-
 @media (min-width: 640px) {
   :deep(#students-table tbody td) {
     padding: 0.75rem 1.5rem;
     font-size: 0.875rem;
   }
 }
-
 @media (max-width: 1024px) {
-  :deep(#students-table) {
-    font-size: 0.813rem;
-  }
-  
+  :deep(#students-table) { font-size: 0.813rem; }
   :deep(#students-table th),
-  :deep(#students-table td) {
-    padding: 0.5rem;
-  }
+  :deep(#students-table td) { padding: 0.5rem; }
 }
 </style>

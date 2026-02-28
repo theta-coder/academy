@@ -10,6 +10,8 @@ class StudentLedger extends Model
 {
     use HasFactory;
 
+    protected $table = 'student_ledger';
+
     protected $fillable = [
         'student_enrollment_id', 'transaction_type', 'amount',
         'description', 'reference_type', 'reference_id',

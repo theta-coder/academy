@@ -16,7 +16,7 @@ class StudentEnrollment extends Model
     protected $fillable = [
         'student_id', 'academic_year_id', 'branch_id', 'class_section_id',
         'roll_number', 'admission_date', 'leaving_date',
-        'enrollment_type', 'status', 'leaving_reason', 'remarks', 'created_by',
+        'enrollment_type', 'sibling_order', 'status', 'leaving_reason', 'remarks', 'created_by',
     ];
 
     protected $casts = [

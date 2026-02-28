@@ -15,6 +15,12 @@ class ExamSubjectController extends Controller
      */
     public function index(Request $request)
     {
+        // Mobile pagination request
+        if ($request->has('mobile') || ($request->ajax() && $request->get('page'))) {
+            return $this->getMobileExamSubjects($request);
+        }
+
+        // DataTables AJAX request
         if ($request->ajax() && $request->has('draw')) {
             return $this->getDataTablesExamSubjects($request);
         }
@@ -22,6 +28,29 @@ class ExamSubjectController extends Controller
         return Inertia::render('ExamSubjects/Index', [
             'exams' => Exam::select('id', 'name', 'exam_code')->latest()->get(),
         ]);
+    }
+
+    private function getMobileExamSubjects(Request $request)
+    {
+        $query = ExamSubject::with(['exam:id,name,exam_code', 'subject:id,subject_name']);
+
+        if ($request->filled('exam_id')) {
+            $query->where('exam_id', $request->exam_id);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('exam', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })->orWhereHas('subject', function ($q) use ($search) {
+                $q->where('subject_name', 'like', "%{$search}%");
+            });
+        }
+
+        $perPage = $request->get('per_page', 10);
+        $examSubjects = $query->latest()->paginate($perPage);
+
+        return response()->json($examSubjects);
     }
 
     private function getDataTablesExamSubjects(Request $request)

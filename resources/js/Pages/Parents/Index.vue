@@ -1,9 +1,8 @@
 <template>
   <AppLayout>
     <div class="min-h-screen flex flex-col">
-      <!-- Main Content -->
       <div class="flex-1 px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
-        
+
         <!-- Page Header -->
         <div class="mb-4 sm:mb-6 lg:mb-8">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
@@ -11,18 +10,22 @@
               <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Parent Management</h1>
               <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">Manage all parent/guardian records</p>
             </div>
-            <Link :href="route('parents.create')">
-              <Button variant="primary" class="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-200">
-                <PlusIcon class="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                <span class="text-sm sm:text-base">Add New Parent</span>
-              </Button>
-            </Link>
+            <Button
+              @click="$inertia.visit(route('parents.create'))"
+              variant="primary"
+              class="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all text-sm"
+            >
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Add New Parent
+            </Button>
           </div>
         </div>
 
         <!-- Filters Card -->
         <div class="bg-white rounded-lg sm:rounded-xl shadow-md p-4 sm:p-6 mb-4 sm:mb-6">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <div>
               <Input
                 v-model="filters.search"
@@ -31,35 +34,21 @@
                 class="w-full text-sm"
               />
             </div>
-            
+
             <div>
               <select
-                v-model="filters.status"
+                v-model="filters.is_active"
                 @change="loadData"
                 class="w-full px-3 sm:px-4 py-2 text-sm border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All Status</option>
-                <option v-for="status in statusOptions" :key="status" :value="status">
-                  {{ status.charAt(0).toUpperCase() + status.slice(1) }}
-                </option>
+                <option value="1">Active</option>
+                <option value="0">Inactive</option>
               </select>
             </div>
 
-            <div>
-              <select
-                v-model="filters.branch_id"
-                @change="loadData"
-                class="w-full px-3 sm:px-4 py-2 text-sm border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">All Branches</option>
-                <option v-for="branch in branches" :key="branch.id" :value="branch.id">
-                  {{ branch.name }}
-                </option>
-              </select>
-            </div>
-
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="secondary"
               @click="resetFilters"
               class="w-full sm:w-auto shadow-sm hover:shadow-md transition-all duration-200 text-sm"
             >
@@ -70,12 +59,12 @@
 
         <!-- Desktop/Tablet Table View -->
         <div class="hidden md:block bg-white rounded-lg sm:rounded-xl shadow-lg overflow-hidden">
-          <!-- Table Header with Search -->
+          <!-- Table Header -->
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50 gap-3">
             <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <span class="text-xs sm:text-sm text-gray-700">Show</span>
-              <select 
-                v-model="perPage" 
+              <select
+                v-model="perPage"
                 @change="changePerPage"
                 class="px-3 sm:px-6 py-1.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
               >
@@ -108,36 +97,16 @@
             <table id="parents-table" class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gradient-to-r from-indigo-50 to-blue-50">
                 <tr>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    #
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Father Name
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Mother Name
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Contact
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    City
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Branch
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Children
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">#</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Father Name</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Father CNIC</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Father Phone</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Mother Name</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Mother Phone</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">City</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Children</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Status</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Actions</th>
                 </tr>
               </thead>
               <tbody class="bg-white text-center divide-y divide-gray-100">
@@ -148,12 +117,8 @@
 
           <!-- Table Footer -->
           <div class="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 bg-gray-50 gap-3 sm:gap-4">
-            <div class="text-xs sm:text-sm text-gray-600" id="table-info">
-              <!-- Info will be inserted here -->
-            </div>
-            <div id="table-pagination">
-              <!-- Pagination will be inserted here -->
-            </div>
+            <div class="text-xs sm:text-sm text-gray-600" id="table-info"></div>
+            <div id="table-pagination"></div>
           </div>
         </div>
 
@@ -163,7 +128,7 @@
           <div v-if="mobileLoading" class="flex items-center justify-center py-12 bg-white rounded-lg shadow">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
           </div>
-          
+
           <!-- Empty State -->
           <div v-else-if="mobileParents.length === 0" class="text-center py-12 bg-white rounded-lg shadow">
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,8 +150,8 @@
                   </div>
                   <p class="text-xs text-gray-500 mt-0.5">{{ parent.mother_name || 'N/A' }}</p>
                 </div>
-                <span :class="getStatusClass(parent.status)" class="px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ml-2">
-                  {{ formatStatus(parent.status) }}
+                <span :class="getStatusClass(parent.is_active)" class="px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ml-2">
+                  {{ parent.is_active ? 'Active' : 'Inactive' }}
                 </span>
               </div>
 
@@ -198,12 +163,12 @@
                   </svg>
                   <span class="text-gray-600">{{ parent.father_phone || 'N/A' }}</span>
                 </div>
-                
+
                 <div class="flex items-center text-xs sm:text-sm">
                   <svg class="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
                   </svg>
-                  <span class="text-gray-600">{{ parent.father_email || 'N/A' }}</span>
+                  <span class="text-gray-600">CNIC: {{ parent.father_cnic || 'N/A' }}</span>
                 </div>
 
                 <div class="flex items-center text-xs sm:text-sm">
@@ -216,30 +181,24 @@
 
                 <div class="flex items-center text-xs sm:text-sm">
                   <svg class="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                  </svg>
-                  <span class="text-gray-600">{{ parent.branch || 'N/A' }}</span>
-                </div>
-
-                <div class="flex items-center text-xs sm:text-sm">
-                  <svg class="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                   </svg>
-                  <span class="text-gray-600 font-medium">{{ parent.total_children }} Children</span>
+                  <span class="text-gray-600 font-medium">{{ parent.total_children ?? 0 }} Children</span>
                 </div>
               </div>
 
               <!-- Actions -->
               <div class="flex gap-2 mt-4 pt-3 border-t border-gray-100">
-                <Link :href="route('parents.edit', parent.id)" class="flex-1">
-                  <button class="w-full px-3 py-2 text-xs sm:text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                    Edit
-                  </button>
-                </Link>
-                <button 
+                <button
+                  @click="$inertia.visit(route('parents.edit', parent.id))"
+                  class="flex-1 px-3 py-2 text-xs sm:text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                  Edit
+                </button>
+                <button
                   @click="() => { parentToDelete = parent.id; showDeleteModal = true; }"
                   class="flex-1 px-3 py-2 text-xs sm:text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center gap-1"
                 >
@@ -256,7 +215,7 @@
         <!-- Mobile Pagination -->
         <div v-if="mobileParents.length > 0" class="md:hidden mt-4 bg-white rounded-lg shadow p-3">
           <div class="flex items-center justify-between">
-            <button 
+            <button
               @click="prevPage"
               :disabled="mobileCurrentPage === 1 || mobileLoading"
               class="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white hover:bg-gray-50 transition-colors flex items-center gap-1"
@@ -266,13 +225,13 @@
               </svg>
               Previous
             </button>
-            
+
             <div class="text-center">
               <div class="text-sm font-medium text-gray-900">Page {{ mobileCurrentPage }} of {{ mobileTotalPages }}</div>
               <div class="text-xs text-gray-500 mt-0.5">{{ mobileTotal }} total parents</div>
             </div>
-            
-            <button 
+
+            <button
               @click="nextPage"
               :disabled="mobileCurrentPage === mobileTotalPages || mobileLoading"
               class="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white hover:bg-gray-50 transition-colors flex items-center gap-1"
@@ -293,29 +252,29 @@
           <div class="flex items-center">
             <div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-red-100 flex items-center justify-center mr-3 sm:mr-4">
               <svg class="w-5 h-5 sm:w-6 sm:h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
               </svg>
             </div>
             <span class="text-base sm:text-lg font-semibold text-gray-900">Delete Parent</span>
           </div>
         </template>
-        
+
         <p class="text-xs sm:text-sm text-gray-600 mt-2">
           Are you sure you want to delete this parent? This action cannot be undone.
         </p>
 
         <template #footer>
           <div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="secondary"
               @click="showDeleteModal = false"
               class="w-full sm:w-auto px-4 sm:px-6 shadow-sm hover:shadow-md transition-all text-sm"
             >
               Cancel
             </Button>
-            <Button 
-              variant="danger" 
-              @click="confirmDelete" 
+            <Button
+              variant="danger"
+              @click="confirmDelete"
               :loading="deleting"
               class="w-full sm:w-auto px-4 sm:px-6 shadow-md hover:shadow-lg transition-all text-sm"
             >
@@ -331,23 +290,16 @@
 
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { router } from '@inertiajs/vue3'
 import AppLayout from '@/Components/Layout/AppLayout.vue'
 import Button from '@/Components/Common/Button.vue'
 import Input from '@/Components/Forms/Input.vue'
 import Modal from '@/Components/Common/Modal.vue'
-import { PlusIcon } from '@heroicons/vue/24/outline'
 import $ from 'jquery'
 import 'datatables.net'
 import axios from 'axios'
 
-const props = defineProps({
-  branches: {
-    type: Array,
-    default: () => []
-  }
-})
-
+// State
 const showDeleteModal = ref(false)
 const deleting = ref(false)
 const parentToDelete = ref(null)
@@ -361,64 +313,47 @@ const mobileTotal = ref(0)
 const mobileOffset = ref(0)
 let table = null
 
+// ✅ Matches controller exactly: search + is_active only
 const filters = reactive({
   search: '',
-  status: '',
-  branch_id: ''
+  is_active: ''
 })
 
-const statusOptions = ['active', 'inactive']
-
 // Helper functions
-const getStatusClass = (status) => {
-  const classes = {
-    'active': 'bg-green-100 text-green-800',
-    'inactive': 'bg-gray-100 text-gray-800'
-  }
-  return classes[status] || 'bg-gray-100 text-gray-800'
+const getStatusClass = (isActive) => {
+  return isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
 }
 
-const formatStatus = (status) => {
-  return status.charAt(0).toUpperCase() + status.slice(1)
-}
-
-// Load mobile data using axios
+// Load mobile data
 const loadMobileData = async () => {
   mobileLoading.value = true
-  
   try {
     const params = {
       page: mobileCurrentPage.value,
       per_page: perPage.value,
       mobile: 1
     }
-    
     if (filters.search) params.search = filters.search
     if (tableSearch.value) params.search = tableSearch.value
-    if (filters.status) params.status = filters.status
-    if (filters.branch_id) params.branch_id = filters.branch_id
-    
+    // ✅ Send is_active as controller expects
+    if (filters.is_active !== '') params.is_active = filters.is_active
+
     const response = await axios.get(route('parents.index'), {
       params,
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-        'Accept': 'application/json'
-      }
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
     })
-    
-    if (response.data) {
-      if (response.data.data) {
-        mobileParents.value = response.data.data
-        mobileCurrentPage.value = response.data.current_page || 1
-        mobileTotalPages.value = response.data.last_page || 1
-        mobileTotal.value = response.data.total || 0
-        mobileOffset.value = response.data.from ? response.data.from - 1 : 0
-      } else if (Array.isArray(response.data)) {
-        mobileParents.value = response.data
-        mobileTotalPages.value = 1
-        mobileTotal.value = response.data.length
-        mobileOffset.value = 0
-      }
+
+    if (response.data?.data) {
+      mobileParents.value = response.data.data
+      mobileCurrentPage.value = response.data.current_page || 1
+      mobileTotalPages.value = response.data.last_page || 1
+      mobileTotal.value = response.data.total || 0
+      mobileOffset.value = response.data.from ? response.data.from - 1 : 0
+    } else if (Array.isArray(response.data)) {
+      mobileParents.value = response.data
+      mobileTotalPages.value = 1
+      mobileTotal.value = response.data.length
+      mobileOffset.value = 0
     }
   } catch (error) {
     console.error('Error loading mobile data:', error)
@@ -429,7 +364,7 @@ const loadMobileData = async () => {
   }
 }
 
-// Initialize on mount
+// Initialize
 onMounted(() => {
   loadMobileData()
 
@@ -438,23 +373,23 @@ onMounted(() => {
     serverSide: true,
     ajax: {
       url: route('parents.index'),
-      data: function(d) {
+      data: function (d) {
+        // ✅ Pass filters exactly as controller reads them
         d.search.value = filters.search || tableSearch.value
-        d.status = filters.status
-        d.branch_id = filters.branch_id
+        if (filters.is_active !== '') d.is_active = filters.is_active
       }
     },
     columns: [
-      { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-      { data: 'father_name', name: 'father_name' },
-      { data: 'mother_name', name: 'mother_name' },
-      { data: 'father_phone', name: 'father_phone' },
-      { data: 'father_email', name: 'father_email' },
-      { data: 'city', name: 'city' },
-      { data: 'branch', name: 'branch', orderable: false },
+      { data: 'DT_RowIndex',    name: 'DT_RowIndex',    orderable: false, searchable: false },
+      { data: 'father_name',    name: 'father_name' },
+      { data: 'father_cnic',    name: 'father_cnic' },
+      { data: 'father_phone',   name: 'father_phone' },
+      { data: 'mother_name',    name: 'mother_name' },
+      { data: 'mother_phone',   name: 'mother_phone' },
+      { data: 'city',           name: 'city' },
       { data: 'total_children', name: 'total_children', orderable: false },
-      { data: 'status', name: 'status' },
-      { data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-center' }
+      { data: 'is_active',      name: 'is_active',      orderable: false },
+      { data: 'action',         name: 'action',         orderable: false, searchable: false, className: 'text-center' }
     ],
     pageLength: 10,
     lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
@@ -462,7 +397,6 @@ onMounted(() => {
     searching: true,
     info: true,
     responsive: true,
-    
     dom: '<"flex items-center justify-between border-b border-gray-200"<"ml-auto"i>>rt<"flex items-center justify-between px-6 py-4 border-t border-gray-200"<"text-sm text-gray-600"i>p>',
     language: {
       emptyTable: '<div class="text-center py-12 text-gray-500"><svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg><p class="mt-2 text-sm font-medium">No parents found</p></div>',
@@ -478,84 +412,24 @@ onMounted(() => {
       }
     },
     drawCallback: function () {
-      const info = $('#parents-table_info')
-      $('#table-info').empty().append(info)
-
-      const paginate = $('#parents-table_paginate')
-      $('#table-pagination').empty().append(paginate)
+      $('#table-info').empty().append($('#parents-table_info'))
+      $('#table-pagination').empty().append($('#parents-table_paginate'))
     }
-  })
-
-  $('#parents-table').on('click', '[data-delete]', function() {
-    const id = $(this).data('delete')
-    parentToDelete.value = id
-    showDeleteModal.value = true
   })
 })
 
-// Mobile pagination
-const prevPage = () => {
-  if (mobileCurrentPage.value > 1 && !mobileLoading.value) {
-    mobileCurrentPage.value--
-    loadMobileData()
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+// ✅ window.editParent — controller action HTML calls editParent({id})
+window.editParent = (parent) => {
+  router.visit(route('parents.edit', parent.id))
 }
 
-const nextPage = () => {
-  if (mobileCurrentPage.value < mobileTotalPages.value && !mobileLoading.value) {
-    mobileCurrentPage.value++
-    loadMobileData()
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+// ✅ window.deleteParent — controller action HTML calls deleteParent(id)
+window.deleteParent = (id) => {
+  parentToDelete.value = id
+  showDeleteModal.value = true
 }
 
-// Table search with debounce
-let tableSearchTimeout = null
-const tableSearchDebounced = () => {
-  clearTimeout(tableSearchTimeout)
-  tableSearchTimeout = setTimeout(() => {
-    loadData()
-  }, 500)
-}
-
-// Filter search with debounce
-let searchTimeout = null
-const searchDebounced = () => {
-  clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    loadData()
-  }, 500)
-}
-
-// Change per page
-const changePerPage = () => {
-  if (table) {
-    table.page.len(perPage.value).draw()
-  }
-  mobileCurrentPage.value = 1
-  loadMobileData()
-}
-
-// Reload table
-const loadData = () => {
-  if (table) {
-    table.ajax.reload()
-  }
-  mobileCurrentPage.value = 1
-  loadMobileData()
-}
-
-// Reset filters
-const resetFilters = () => {
-  filters.search = ''
-  filters.status = ''
-  filters.branch_id = ''
-  tableSearch.value = ''
-  loadData()
-}
-
-// Delete parent
+// Delete
 const confirmDelete = () => {
   deleting.value = true
   router.delete(route('parents.destroy', parentToDelete.value), {
@@ -564,15 +438,56 @@ const confirmDelete = () => {
       deleting.value = false
       loadData()
     },
-    onError: () => {
-      deleting.value = false
-    }
+    onError: () => { deleting.value = false }
   })
 }
 
-window.deleteParent = (id) => {
-  parentToDelete.value = id
-  showDeleteModal.value = true
+// Pagination
+const prevPage = () => {
+  if (mobileCurrentPage.value > 1 && !mobileLoading.value) {
+    mobileCurrentPage.value--
+    loadMobileData()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+const nextPage = () => {
+  if (mobileCurrentPage.value < mobileTotalPages.value && !mobileLoading.value) {
+    mobileCurrentPage.value++
+    loadMobileData()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
+// Debounced search
+let tableSearchTimeout = null
+const tableSearchDebounced = () => {
+  clearTimeout(tableSearchTimeout)
+  tableSearchTimeout = setTimeout(() => loadData(), 500)
+}
+
+let searchTimeout = null
+const searchDebounced = () => {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => loadData(), 500)
+}
+
+const changePerPage = () => {
+  if (table) table.page.len(perPage.value).draw()
+  mobileCurrentPage.value = 1
+  loadMobileData()
+}
+
+const loadData = () => {
+  if (table) table.ajax.reload()
+  mobileCurrentPage.value = 1
+  loadMobileData()
+}
+
+const resetFilters = () => {
+  filters.search = ''
+  filters.is_active = ''
+  tableSearch.value = ''
+  loadData()
 }
 </script>
 
@@ -582,14 +497,12 @@ window.deleteParent = (id) => {
   color: #4b5563;
   font-weight: 500;
 }
-
 :deep(.dataTables_paginate) {
   display: flex;
   justify-content: flex-end;
   gap: 0.25rem;
   flex-wrap: wrap;
 }
-
 :deep(.paginate_button) {
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
@@ -601,59 +514,45 @@ window.deleteParent = (id) => {
   cursor: pointer;
   transition: all 0.2s;
 }
-
 :deep(.paginate_button:hover:not(.disabled)) {
   background: #f3f4f6;
   border-color: #9ca3af;
 }
-
 :deep(.paginate_button.current) {
   background: #2563eb;
   color: white;
   border-color: #2563eb;
 }
-
 :deep(.paginate_button.current:hover) {
   background: #1d4ed8;
   border-color: #1d4ed8;
 }
-
 :deep(.paginate_button.disabled) {
   opacity: 0.5;
   cursor: not-allowed;
   background: #f9fafb;
 }
-
 :deep(#parents-table_info),
 :deep(#parents-table_paginate) {
   display: none;
 }
-
 #table-info :deep(.dataTables_info),
 #table-pagination :deep(.dataTables_paginate) {
   display: block;
 }
-
 :deep(#parents-table tbody td) {
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
 }
-
 @media (min-width: 640px) {
   :deep(#parents-table tbody td) {
     padding: 0.75rem 1.5rem;
     font-size: 0.875rem;
   }
 }
-
 @media (max-width: 1024px) {
-  :deep(#parents-table) {
-    font-size: 0.813rem;
-  }
-  
+  :deep(#parents-table) { font-size: 0.813rem; }
   :deep(#parents-table th),
-  :deep(#parents-table td) {
-    padding: 0.5rem;
-  }
+  :deep(#parents-table td) { padding: 0.5rem; }
 }
 </style>

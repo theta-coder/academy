@@ -15,14 +15,31 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\ParentController;
 use App\Http\Controllers\FeeTypeController;
-use App\Http\Controllers\FeeController;
+use App\Http\Controllers\FeeStructureController;
+use App\Http\Controllers\FeeVoucherController;
+use App\Http\Controllers\FeeVoucherFineController;
+use App\Http\Controllers\FeeFineRuleController;
+use App\Http\Controllers\FeeRefundController;
+use App\Http\Controllers\FeeWaiverController;
+use App\Http\Controllers\FeeAdvanceAdjustmentController;
+use App\Http\Controllers\FeeCollectionSummaryController;
 use App\Http\Controllers\FeePaymentController;
+use App\Http\Controllers\FeeConcessionTypeController;
+use App\Http\Controllers\ScholarshipController;
+use App\Http\Controllers\SiblingDiscountRuleController;
+use App\Http\Controllers\InstallmentPlanController;
+use App\Http\Controllers\AcademyPaymentAccountController;
 use App\Http\Controllers\ExamSubjectController;
 use App\Http\Controllers\GradeScaleController;
 use App\Http\Controllers\ExamResultController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AcademicYearController;
+use App\Http\Controllers\StudentEnrollmentController;
+use App\Http\Controllers\StudentFeeConcessionController;
+use App\Http\Controllers\StudentScholarshipController;
+use App\Http\Controllers\StudentInstallmentAssignmentController;
+use App\Http\Controllers\InstallmentScheduleController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -155,8 +172,9 @@ Route::get('/subject-groups/{subjectGroup}/group-subjects', [SubjectGroupControl
     // ==========================================
 
     // Students
-    
-    
+    Route::resource('students', StudentController::class);
+    Route::get('api/students/dropdown', [StudentController::class, 'dropdown'])
+        ->name('students.dropdown');
 
     // Teachers
     Route::resource('teachers', TeacherController::class);
@@ -169,6 +187,37 @@ Route::get('/subject-groups/{subjectGroup}/group-subjects', [SubjectGroupControl
         ->name('parents.dropdown');
 
     // ==========================================
+    // ENROLLMENT ROUTES
+    // ==========================================
+
+    // Student Enrollments
+    Route::resource('student-enrollments', StudentEnrollmentController::class);
+    Route::get('api/student-enrollments/dropdown', [StudentEnrollmentController::class, 'dropdown'])
+        ->name('student-enrollments.dropdown');
+    Route::get('api/student-enrollments/classes-by-branch/{branchId}', [StudentEnrollmentController::class, 'classesByBranch'])
+        ->name('student-enrollments.classes-by-branch');
+    Route::get('api/student-enrollments/sections-by-branch-class/{branchClassId}', [StudentEnrollmentController::class, 'sectionsByBranchClass'])
+        ->name('student-enrollments.sections-by-branch-class');
+
+    // Student Fee Concessions
+    Route::resource('student-fee-concessions', StudentFeeConcessionController::class);
+    Route::get('api/student-fee-concessions/enrollments-by-student/{studentId}', [StudentFeeConcessionController::class, 'enrollmentsByStudent'])
+        ->name('student-fee-concessions.enrollments-by-student');
+
+    // Student Scholarships
+    Route::resource('student-scholarships', StudentScholarshipController::class);
+    Route::get('api/student-scholarships/enrollments-by-student/{studentId}', [StudentScholarshipController::class, 'enrollmentsByStudent'])
+        ->name('student-scholarships.enrollments-by-student');
+
+    // Student Installment Assignments
+    Route::resource('student-installment-assignments', StudentInstallmentAssignmentController::class);
+    Route::get('api/student-installment-assignments/enrollments-by-student/{studentId}', [StudentInstallmentAssignmentController::class, 'enrollmentsByStudent'])
+        ->name('student-installment-assignments.enrollments-by-student');
+
+    // Installment Schedules
+    Route::resource('installment-schedules', InstallmentScheduleController::class);
+
+    // ==========================================
     // FEE MANAGEMENT ROUTES
     // ==========================================
 
@@ -177,17 +226,65 @@ Route::get('/subject-groups/{subjectGroup}/group-subjects', [SubjectGroupControl
     Route::get('api/fee-types/dropdown', [FeeTypeController::class, 'dropdown'])
         ->name('fee-types.dropdown');
 
-    // Fees
-    Route::resource('fees', FeeController::class);
-    Route::get('api/fees/dropdown', [FeeController::class, 'dropdown'])
-        ->name('fees.dropdown');
+    // Fee Structures
+    Route::resource('fee-structures', FeeStructureController::class);
+    Route::get('api/fee-structures/dropdown', [FeeStructureController::class, 'dropdown'])
+        ->name('fee-structures.dropdown');
+
+    // Fee Vouchers
+    Route::resource('fee-vouchers', FeeVoucherController::class);
+    Route::get('api/fee-vouchers/dropdown', [FeeVoucherController::class, 'dropdown'])
+        ->name('fee-vouchers.dropdown');
 
     // Fee Payments
-    Route::resource('fee-payments', FeePaymentController::class)->except(['edit', 'update']);
-    Route::post('fee-payments/{feePayment}/cancel', [FeePaymentController::class, 'cancel'])
-        ->name('fee-payments.cancel');
+    Route::resource('fee-payments', FeePaymentController::class);
     Route::get('api/fee-payments/dropdown', [FeePaymentController::class, 'dropdown'])
         ->name('fee-payments.dropdown');
+
+    // Fee Voucher Fines
+    Route::resource('fee-voucher-fines', FeeVoucherFineController::class);
+
+    // Fee Fine Rules
+    Route::resource('fee-fine-rules', FeeFineRuleController::class);
+    Route::get('api/fee-fine-rules/dropdown', [FeeFineRuleController::class, 'dropdown'])
+        ->name('fee-fine-rules.dropdown');
+
+    // Fee Refunds
+    Route::resource('fee-refunds', FeeRefundController::class);
+
+    // Fee Waivers
+    Route::resource('fee-waivers', FeeWaiverController::class);
+
+    // Fee Advance Adjustments
+    Route::resource('fee-advance-adjustments', FeeAdvanceAdjustmentController::class);
+
+    // Fee Collection Summaries
+    Route::resource('fee-collection-summaries', FeeCollectionSummaryController::class);
+
+    // Fee Concession Types
+    Route::resource('fee-concession-types', FeeConcessionTypeController::class);
+    Route::get('api/fee-concession-types/dropdown', [FeeConcessionTypeController::class, 'dropdown'])
+        ->name('fee-concession-types.dropdown');
+
+    // Scholarships
+    Route::resource('scholarships', ScholarshipController::class);
+    Route::get('api/scholarships/dropdown', [ScholarshipController::class, 'dropdown'])
+        ->name('scholarships.dropdown');
+
+    // Sibling Discount Rules
+    Route::resource('sibling-discount-rules', SiblingDiscountRuleController::class);
+    Route::get('api/sibling-discount-rules/dropdown', [SiblingDiscountRuleController::class, 'dropdown'])
+        ->name('sibling-discount-rules.dropdown');
+
+    // Installment Plans
+    Route::resource('installment-plans', InstallmentPlanController::class);
+    Route::get('api/installment-plans/dropdown', [InstallmentPlanController::class, 'dropdown'])
+        ->name('installment-plans.dropdown');
+
+    // Academy Payment Accounts
+    Route::resource('academy-payment-accounts', AcademyPaymentAccountController::class);
+    Route::get('api/academy-payment-accounts/dropdown', [AcademyPaymentAccountController::class, 'dropdown'])
+        ->name('academy-payment-accounts.dropdown');
 
     // ==========================================
     // ACADEMIC SYSTEM ROUTES

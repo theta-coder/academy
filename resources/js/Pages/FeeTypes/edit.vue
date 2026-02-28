@@ -32,41 +32,31 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Input
-                  v-model="form.name"
+                  v-model="form.fee_name"
                   label="Fee Type Name"
+                  placeholder="e.g., Tuition Fee"
                   required
-                  :error="form.errors.name"
+                  :error="form.errors.fee_name"
                   class="transition-all duration-200"
                 />
               </div>
 
               <div>
-                <Input
-                  v-model="form.code"
-                  label="Fee Code"
-                  required
-                  :error="form.errors.code"
-                  hint="Unique identifier for this fee type"
-                />
-              </div>
-
-              <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Branch <span class="text-red-500">*</span>
+                  Fee Category
                 </label>
                 <select
-                  v-model="form.branch_id"
+                  v-model="form.fee_category"
                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  :class="{ 'border-red-500 focus:ring-red-500': form.errors.branch_id }"
-                  required
+                  :class="{ 'border-red-500 focus:ring-red-500': form.errors.fee_category }"
                 >
-                  <option value="" disabled>Select branch</option>
-                  <option v-for="branch in branches" :key="branch.id" :value="branch.id">
-                    {{ branch.name }}
-                  </option>
+                  <option value="" disabled>Select category</option>
+                  <option value="school">School</option>
+                  <option value="academy">Academy</option>
+                  <option value="both">Both</option>
                 </select>
-                <p v-if="form.errors.branch_id" class="mt-1 text-sm text-red-600">
-                  {{ form.errors.branch_id }}
+                <p v-if="form.errors.fee_category" class="mt-1 text-sm text-red-600">
+                  {{ form.errors.fee_category }}
                 </p>
               </div>
             </div>
@@ -80,130 +70,48 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Input
-                  v-model="form.amount"
-                  type="number"
-                  label="Fee Amount"
-                  required
-                  :error="form.errors.amount"
-                  step="0.01"
-                  min="0"
-                  hint="Standard fee amount"
-                />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Frequency <span class="text-red-500">*</span>
-                </label>
-                <select
-                  v-model="form.frequency"
-                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  :class="{ 'border-red-500 focus:ring-red-500': form.errors.frequency }"
-                  required
-                >
-                  <option value="" disabled>Select frequency</option>
-                  <option v-for="freq in frequencyOptions" :key="freq.value" :value="freq.value">
-                    {{ freq.label }}
-                  </option>
-                </select>
-                <p v-if="form.errors.frequency" class="mt-1 text-sm text-red-600">
-                  {{ form.errors.frequency }}
-                </p>
-              </div>
-
               <div class="md:col-span-2 flex items-center">
                 <label class="flex items-center space-x-3 cursor-pointer group">
                   <input
-                    v-model="form.is_mandatory"
+                    v-model="form.is_recurring"
                     type="checkbox"
-                    class="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-2 focus:ring-red-500 transition-all"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 transition-all"
                   />
                   <div>
                     <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900">
-                      Mark as Mandatory Fee
+                      Recurring Fee
                     </span>
-                    <p class="text-xs text-gray-500 mt-0.5">This fee must be paid by all students</p>
+                    <p class="text-xs text-gray-500 mt-0.5">Check if this fee repeats every specific months</p>
                   </div>
                 </label>
               </div>
-            </div>
-          </div>
 
-          <!-- Applicability Period Section -->
-          <div class="p-8 border-b border-gray-100">
-            <div class="flex items-center mb-6">
-              <div class="h-10 w-1 bg-purple-600 rounded-full mr-4"></div>
-              <h2 class="text-xl font-semibold text-gray-900">Applicability Period</h2>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+              <div v-if="form.is_recurring">
                 <Input
-                  v-model="form.applicable_from"
-                  type="date"
-                  label="Applicable From"
-                  :error="form.errors.applicable_from"
-                  hint="Start date for this fee type"
+                  v-model="form.recurring_months"
+                  label="Recurring Months"
+                  placeholder="e.g., 1,2,3,4,5,6,7,8,9,10,11,12"
+                  :error="form.errors.recurring_months"
+                  hint="Comma-separated month numbers (1-12)"
                 />
               </div>
 
               <div>
                 <Input
-                  v-model="form.applicable_to"
-                  type="date"
-                  label="Applicable To"
-                  :error="form.errors.applicable_to"
-                  hint="End date for this fee type (optional)"
+                  v-model="form.display_order"
+                  type="number"
+                  label="Display Order"
+                  placeholder="e.g., 1"
+                  :error="form.errors.display_order"
+                  min="0"
+                  hint="Determines the display position"
                 />
-              </div>
-
-              <div class="md:col-span-2">
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div class="flex items-start">
-                    <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <div>
-                      <p class="text-sm font-medium text-blue-900">Applicability Information</p>
-                      <p class="text-xs text-blue-700 mt-1">
-                        Leave the "Applicable To" date empty if this fee type should remain active indefinitely. 
-                        The system will automatically check if the fee type is applicable when generating fee records.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Usage Statistics (if available) -->
-              <div v-if="feeType.fees" class="md:col-span-2">
-                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div class="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <p class="text-xs text-gray-600 mb-1">Total Fee Records</p>
-                      <p class="text-lg font-semibold text-green-700">{{ feeType.fees.length }}</p>
-                    </div>
-                    <div>
-                      <p class="text-xs text-gray-600 mb-1">Active Students</p>
-                      <p class="text-lg font-semibold text-blue-700">
-                        {{ feeType.fees.filter(f => f.status !== 'cancelled').length }}
-                      </p>
-                    </div>
-                    <div>
-                      <p class="text-xs text-gray-600 mb-1">Total Collected</p>
-                      <p class="text-lg font-semibold text-purple-700">
-                        Rs. {{ calculateTotalCollected().toLocaleString() }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
 
           <!-- Additional Information Section -->
-          <div class="p-8 bg-gray-50">
+          <div class="p-8 border-b border-gray-100">
             <div class="flex items-center mb-6">
               <div class="h-10 w-1 bg-orange-600 rounded-full mr-4"></div>
               <h2 class="text-xl font-semibold text-gray-900">Additional Information</h2>
@@ -214,6 +122,7 @@
                 <Textarea
                   v-model="form.description"
                   label="Description"
+                  placeholder="Enter detailed description of this fee type"
                   :rows="4"
                   :error="form.errors.description"
                   hint="Provide information about what this fee covers"
@@ -225,17 +134,15 @@
                   Status <span class="text-red-500">*</span>
                 </label>
                 <select
-                  v-model="form.status"
+                  v-model="form.is_active"
                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  :class="{ 'border-red-500 focus:ring-red-500': form.errors.status }"
-                  required
+                  :class="{ 'border-red-500 focus:ring-red-500': form.errors.is_active }"
                 >
-                  <option value="" disabled>Select status</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
+                  <option :value="true">Active</option>
+                  <option :value="false">Inactive</option>
                 </select>
-                <p v-if="form.errors.status" class="mt-1 text-sm text-red-600">
-                  {{ form.errors.status }}
+                <p v-if="form.errors.is_active" class="mt-1 text-sm text-red-600">
+                  {{ form.errors.is_active }}
                 </p>
               </div>
             </div>
@@ -283,40 +190,18 @@ const props = defineProps({
   feeType: {
     type: Object,
     required: true
-  },
-  branches: {
-    type: Array,
-    default: () => []
   }
 })
 
-const frequencyOptions = [
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'quarterly', label: 'Quarterly' },
-  { value: 'half_yearly', label: 'Half Yearly' },
-  { value: 'yearly', label: 'Yearly' },
-  { value: 'one_time', label: 'One Time' }
-]
-
 const form = useForm({
-  branch_id: props.feeType.branch_id,
-  name: props.feeType.name,
-  code: props.feeType.code,
-  amount: props.feeType.amount,
-  description: props.feeType.description,
-  frequency: props.feeType.frequency,
-  is_mandatory: props.feeType.is_mandatory,
-  applicable_from: props.feeType.applicable_from,
-  applicable_to: props.feeType.applicable_to,
-  status: props.feeType.status
+  fee_name: props.feeType.fee_name,
+  fee_category: props.feeType.fee_category ?? '',
+  is_recurring: props.feeType.is_recurring ?? false,
+  recurring_months: props.feeType.recurring_months ?? '',
+  description: props.feeType.description ?? '',
+  display_order: props.feeType.display_order ?? '',
+  is_active: props.feeType.is_active ?? true
 })
-
-const calculateTotalCollected = () => {
-  if (!props.feeType.fees) return 0
-  return props.feeType.fees.reduce((total, fee) => {
-    return total + (parseFloat(fee.paid_amount) || 0)
-  }, 0)
-}
 
 const submit = () => {
   form.put(route('fee-types.update', props.feeType.id), {

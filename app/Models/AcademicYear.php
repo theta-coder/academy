@@ -36,4 +36,9 @@ class AcademicYear extends Model
     {
         return $this->hasMany(FeeVoucher::class);
     }
+
+    public function branchClasses()
+{
+    return $this->hasMany(BranchClass::class);
+}
 }

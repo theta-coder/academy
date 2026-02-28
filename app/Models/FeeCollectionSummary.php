@@ -10,6 +10,8 @@ class FeeCollectionSummary extends Model
 {
     use HasFactory;
 
+    protected $table = 'fee_collection_summary';
+
     protected $fillable = [
         'branch_id', 'academic_year_id', 'summary_month', 'summary_year',
         'total_students', 'total_billed', 'total_discount', 'total_fine',

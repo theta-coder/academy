@@ -11,14 +11,9 @@
       <!-- Page Content -->
       <main class="py-6">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <!-- Alert Messages -->
-          <Alert v-if="$page.props.flash?.success" type="success" class="mb-4">
-            {{ $page.props.flash.success }}
-          </Alert>
+         
 
-          <Alert v-if="$page.props.flash?.error" type="error" class="mb-4">
-            {{ $page.props.flash.error }}
-          </Alert>
+         
 
           <!-- Page Content Slot -->
           <slot />

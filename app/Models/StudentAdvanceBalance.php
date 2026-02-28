@@ -10,6 +10,8 @@ class StudentAdvanceBalance extends Model
 {
     use HasFactory;
 
+    protected $table = 'student_advance_balance';
+
     public $timestamps = false;
 
     protected $fillable = [

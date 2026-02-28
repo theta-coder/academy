@@ -1,449 +1,139 @@
 <template>
   <AppLayout>
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      
-      <!-- Page Header -->
-      <div class="mb-8">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900">Record Fee Payment</h1>
-            <p class="mt-2 text-sm text-gray-600">Record a new fee payment transaction</p>
-          </div>
-          <Link :href="route('fee-payments.index')">
-            <Button variant="secondary" class="shadow-sm hover:shadow-md transition-shadow">
-              <ArrowLeftIcon class="h-5 w-5 mr-2" />
+    <div class="min-h-screen flex flex-col">
+      <div class="flex-1 px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
+
+        <!-- Page Header -->
+        <div class="mb-4 sm:mb-6 lg:mb-8">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Record Fee Payment</h1>
+              <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">Record a new fee payment transaction</p>
+            </div>
+            <Button @click="$inertia.visit(route('fee-payments.index'))" variant="secondary" class="w-full sm:w-auto shadow-sm hover:shadow-md transition-all text-sm">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
               Back to List
             </Button>
-          </Link>
+          </div>
         </div>
-      </div>
 
-      <!-- Form Card -->
-      <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-        <form @submit.prevent="submit">
-          
-          <!-- Student & Fee Selection Section -->
-          <div class="p-8 border-b border-gray-100">
-            <div class="flex items-center mb-6">
-              <div class="h-10 w-1 bg-blue-600 rounded-full mr-4"></div>
-              <h2 class="text-xl font-semibold text-gray-900">Student & Fee Selection</h2>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Student <span class="text-red-500">*</span>
-                </label>
-                <select
-                  v-model="form.student_id"
-                  @change="loadStudentFees"
-                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  :class="{ 'border-red-500 focus:ring-red-500': form.errors.student_id }"
-                  required
-                >
-                  <option value="" disabled>Select student</option>
-                  <option v-for="student in students" :key="student.id" :value="student.id">
-                    {{ student.admission_no }} - {{ student.first_name }} {{ student.last_name }}
-                  </option>
+        <!-- Create Form -->
+        <div class="bg-white rounded-lg sm:rounded-xl shadow-md p-4 sm:p-6">
+          <form @submit.prevent="submit">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+
+              <!-- Voucher -->
+              <div>
+                <label for="voucher_id" class="block text-sm font-medium text-gray-700 mb-2">Voucher <span class="text-red-500">*</span></label>
+                <select id="voucher_id" v-model="form.voucher_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" :class="{ 'border-red-500': form.errors.voucher_id }" required>
+                  <option value="">Select Voucher</option>
+                  <option v-for="v in vouchers" :key="v.id" :value="v.id">{{ v.voucher_no }} - Rs. {{ Number(v.net_amount).toLocaleString() }} ({{ v.status }})</option>
                 </select>
-                <p v-if="form.errors.student_id" class="mt-1 text-sm text-red-600">
-                  {{ form.errors.student_id }}
-                </p>
+                <p v-if="form.errors.voucher_id" class="mt-1 text-sm text-red-600">{{ form.errors.voucher_id }}</p>
               </div>
 
-              <!-- Pending Fees List -->
-              <div v-if="pendingFees.length > 0" class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Select Fee to Pay <span class="text-red-500">*</span>
-                </label>
-                <div class="space-y-2 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3">
-                  <label 
-                    v-for="fee in pendingFees" 
-                    :key="fee.id"
-                    class="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                    :class="{ 'bg-blue-50 border-blue-300': form.fee_id === fee.id }"
-                  >
-                    <input
-                      type="radio"
-                      :value="fee.id"
-                      v-model="form.fee_id"
-                      @change="onFeeSelect"
-                      class="mt-1 w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
-                    />
-                    <div class="ml-3 flex-1">
-                      <div class="flex items-center justify-between">
-                        <p class="text-sm font-medium text-gray-900">{{ fee.fee_type.name }}</p>
-                        <span :class="getStatusClass(fee.status)" class="px-2 py-1 text-xs font-medium rounded-full">
-                          {{ formatStatus(fee.status) }}
-                        </span>
-                      </div>
-                      <p class="text-xs text-gray-500 mt-1">{{ formatMonthYear(fee.month, fee.year) }}</p>
-                      <div class="grid grid-cols-3 gap-2 mt-2 text-xs">
-                        <div>
-                          <span class="text-gray-500">Total:</span>
-                          <span class="font-semibold text-gray-900 ml-1">Rs. {{ Number(fee.net_amount).toLocaleString() }}</span>
-                        </div>
-                        <div>
-                          <span class="text-gray-500">Paid:</span>
-                          <span class="font-semibold text-green-600 ml-1">Rs. {{ Number(fee.paid_amount).toLocaleString() }}</span>
-                        </div>
-                        <div>
-                          <span class="text-gray-500">Balance:</span>
-                          <span class="font-semibold text-red-600 ml-1">Rs. {{ Number(fee.balance_amount).toLocaleString() }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </label>
-                </div>
-                <p v-if="form.errors.fee_id" class="mt-1 text-sm text-red-600">
-                  {{ form.errors.fee_id }}
-                </p>
-              </div>
-
-              <div v-else-if="form.student_id && pendingFees.length === 0" class="md:col-span-2">
-                <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                  <svg class="mx-auto h-12 w-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  <p class="mt-2 text-sm font-medium text-green-900">All fees are paid!</p>
-                  <p class="text-xs text-green-700 mt-1">This student has no pending fee payments.</p>
-                </div>
-              </div>
-
+              <!-- Student Enrollment -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Branch <span class="text-red-500">*</span>
-                </label>
-                <select
-                  v-model="form.branch_id"
-                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  :class="{ 'border-red-500 focus:ring-red-500': form.errors.branch_id }"
-                  required
-                >
-                  <option value="" disabled>Select branch</option>
-                  <option v-for="branch in branches" :key="branch.id" :value="branch.id">
-                    {{ branch.name }}
-                  </option>
+                <label for="student_enrollment_id" class="block text-sm font-medium text-gray-700 mb-2">Student Enrollment <span class="text-red-500">*</span></label>
+                <select id="student_enrollment_id" v-model="form.student_enrollment_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" :class="{ 'border-red-500': form.errors.student_enrollment_id }" required>
+                  <option value="">Select Enrollment</option>
+                  <option v-for="e in enrollments" :key="e.id" :value="e.id">{{ e.student?.student_name || e.student?.first_name }} ({{ e.student?.admission_no }})</option>
                 </select>
-                <p v-if="form.errors.branch_id" class="mt-1 text-sm text-red-600">
-                  {{ form.errors.branch_id }}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Payment Details Section -->
-          <div class="p-8 bg-gray-50 border-b border-gray-100">
-            <div class="flex items-center mb-6">
-              <div class="h-10 w-1 bg-green-600 rounded-full mr-4"></div>
-              <h2 class="text-xl font-semibold text-gray-900">Payment Details</h2>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Input
-                  v-model="form.payment_date"
-                  type="date"
-                  label="Payment Date"
-                  required
-                  :error="form.errors.payment_date"
-                />
+                <p v-if="form.errors.student_enrollment_id" class="mt-1 text-sm text-red-600">{{ form.errors.student_enrollment_id }}</p>
               </div>
 
+              <!-- Paid Amount -->
               <div>
-                <Input
-                  v-model="form.amount_paid"
-                  type="number"
-                  label="Amount Paid"
-                  placeholder="5000"
-                  required
-                  :error="form.errors.amount_paid"
-                  step="0.01"
-                  min="0"
-                  :max="selectedFeeBalance"
-                  :hint="selectedFeeBalance ? `Maximum: Rs. ${selectedFeeBalance.toLocaleString()}` : ''"
-                />
+                <label for="paid_amount" class="block text-sm font-medium text-gray-700 mb-2">Paid Amount (Rs.) <span class="text-red-500">*</span></label>
+                <input id="paid_amount" v-model="form.paid_amount" type="number" step="0.01" min="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" :class="{ 'border-red-500': form.errors.paid_amount }" required />
+                <p v-if="form.errors.paid_amount" class="mt-1 text-sm text-red-600">{{ form.errors.paid_amount }}</p>
               </div>
 
+              <!-- Payment Date -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Payment Method <span class="text-red-500">*</span>
-                </label>
-                <select
-                  v-model="form.payment_method"
-                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  :class="{ 'border-red-500 focus:ring-red-500': form.errors.payment_method }"
-                  required
-                >
-                  <option value="" disabled>Select payment method</option>
-                  <option v-for="method in paymentMethods" :key="method.value" :value="method.value">
-                    {{ method.label }}
-                  </option>
+                <label for="payment_date" class="block text-sm font-medium text-gray-700 mb-2">Payment Date <span class="text-red-500">*</span></label>
+                <input id="payment_date" v-model="form.payment_date" type="date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" :class="{ 'border-red-500': form.errors.payment_date }" required />
+                <p v-if="form.errors.payment_date" class="mt-1 text-sm text-red-600">{{ form.errors.payment_date }}</p>
+              </div>
+
+              <!-- Payment Method -->
+              <div>
+                <label for="payment_method" class="block text-sm font-medium text-gray-700 mb-2">Payment Method <span class="text-red-500">*</span></label>
+                <select id="payment_method" v-model="form.payment_method" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                  <option value="cash">Cash</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="online">Online</option>
                 </select>
-                <p v-if="form.errors.payment_method" class="mt-1 text-sm text-red-600">
-                  {{ form.errors.payment_method }}
-                </p>
               </div>
 
+              <!-- Bank Name -->
               <div>
-                <Input
-                  v-model="form.receipt_no"
-                  label="Receipt Number"
-                  :error="form.errors.receipt_no"
-                  :disabled="true"
-                  hint="Auto-generated"
-                />
+                <label for="bank_name" class="block text-sm font-medium text-gray-700 mb-2">Bank Name</label>
+                <input id="bank_name" v-model="form.bank_name" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="e.g., HBL, UBL" />
               </div>
 
+              <!-- Transaction Ref -->
               <div>
-                <Input
-                  v-model="form.transaction_id"
-                  label="Transaction ID"
-                  placeholder="Enter transaction ID"
-                  :error="form.errors.transaction_id"
-                  :hint="form.payment_method === 'online' || form.payment_method === 'bank_transfer' ? 'Required for online/bank payments' : 'Optional'"
-                />
+                <label for="transaction_ref" class="block text-sm font-medium text-gray-700 mb-2">Transaction Reference</label>
+                <input id="transaction_ref" v-model="form.transaction_ref" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Transaction ID / Cheque No" />
               </div>
 
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Collected By <span class="text-red-500">*</span>
-                </label>
-                <select
-                  v-model="form.collected_by"
-                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  :class="{ 'border-red-500 focus:ring-red-500': form.errors.collected_by }"
-                  required
-                >
-                  <option value="" disabled>Select collector</option>
-                  <option value="1">Current User</option>
-                  <!-- Add more users/staff if needed -->
-                </select>
-                <p v-if="form.errors.collected_by" class="mt-1 text-sm text-red-600">
-                  {{ form.errors.collected_by }}
-                </p>
+              <!-- Is Advance -->
+              <div class="flex items-center">
+                <input id="is_advance" v-model="form.is_advance" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                <label for="is_advance" class="ml-2 block text-sm text-gray-700">Advance Payment</label>
               </div>
+
+              <!-- Notes -->
+              <div class="col-span-2">
+                <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                <textarea id="notes" v-model="form.notes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Additional notes..."></textarea>
+              </div>
+
             </div>
-          </div>
 
-          <!-- Bank/Cheque Details Section (Conditional) -->
-          <div v-if="form.payment_method === 'cheque' || form.payment_method === 'bank_transfer'" class="p-8 border-b border-gray-100">
-            <div class="flex items-center mb-6">
-              <div class="h-10 w-1 bg-purple-600 rounded-full mr-4"></div>
-              <h2 class="text-xl font-semibold text-gray-900">
-                {{ form.payment_method === 'cheque' ? 'Cheque Details' : 'Bank Details' }}
-              </h2>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div v-if="form.payment_method === 'cheque'">
-                <Input
-                  v-model="form.cheque_number"
-                  label="Cheque Number"
-                  placeholder="Enter cheque number"
-                  :error="form.errors.cheque_number"
-                  :required="form.payment_method === 'cheque'"
-                />
-              </div>
-
-              <div>
-                <Input
-                  v-model="form.bank_name"
-                  label="Bank Name"
-                  placeholder="Enter bank name"
-                  :error="form.errors.bank_name"
-                  :required="form.payment_method === 'cheque' || form.payment_method === 'bank_transfer'"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Additional Notes Section -->
-          <div class="p-8 bg-gray-50">
-            <div class="flex items-center mb-6">
-              <div class="h-10 w-1 bg-orange-600 rounded-full mr-4"></div>
-              <h2 class="text-xl font-semibold text-gray-900">Additional Information</h2>
-            </div>
-            
-            <div class="grid grid-cols-1 gap-6">
-              <div>
-                <Textarea
-                  v-model="form.notes"
-                  label="Notes"
-                  placeholder="Enter any additional notes or remarks about this payment"
-                  :rows="3"
-                  :error="form.errors.notes"
-                />
-              </div>
-
-              <!-- Payment Summary -->
-              <div v-if="form.fee_id && selectedFee" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 class="text-sm font-semibold text-blue-900 mb-3">Payment Summary</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                  <div>
-                    <p class="text-gray-600">Fee Total</p>
-                    <p class="font-semibold text-gray-900">Rs. {{ Number(selectedFee.net_amount).toLocaleString() }}</p>
-                  </div>
-                  <div>
-                    <p class="text-gray-600">Already Paid</p>
-                    <p class="font-semibold text-green-600">Rs. {{ Number(selectedFee.paid_amount).toLocaleString() }}</p>
-                  </div>
-                  <div>
-                    <p class="text-gray-600">Paying Now</p>
-                    <p class="font-semibold text-blue-600">Rs. {{ Number(form.amount_paid || 0).toLocaleString() }}</p>
-                  </div>
-                  <div>
-                    <p class="text-gray-600">Remaining</p>
-                    <p class="font-semibold text-red-600">
-                      Rs. {{ (Number(selectedFee.balance_amount) - Number(form.amount_paid || 0)).toLocaleString() }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Form Actions -->
-          <div class="px-8 py-6 bg-gray-50 border-t border-gray-200">
-            <div class="flex justify-end gap-3">
-              <Link :href="route('fee-payments.index')">
-                <Button 
-                  type="button" 
-                  variant="secondary" 
-                  class="px-6 py-2.5 shadow-sm hover:shadow-md transition-all"
-                >
-                  Cancel
-                </Button>
-              </Link>
-              <Button 
-                type="submit" 
-                variant="primary" 
-                :loading="form.processing"
-                :disabled="!form.fee_id || !form.amount_paid || pendingFees.length === 0"
-                class="px-8 py-2.5 shadow-md hover:shadow-lg transition-all"
-              >
+            <!-- Submit Buttons -->
+            <div class="mt-6 flex flex-col sm:flex-row items-center justify-end gap-3 sm:gap-4">
+              <Button type="button" variant="secondary" @click="$inertia.visit(route('fee-payments.index'))" class="w-full sm:w-auto shadow-sm hover:shadow-md transition-all text-sm">Cancel</Button>
+              <Button type="submit" variant="primary" :loading="form.processing" class="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all text-sm">
                 <span v-if="!form.processing">Record Payment</span>
                 <span v-else>Recording...</span>
               </Button>
             </div>
-          </div>
-        </form>
-      </div>
+          </form>
+        </div>
 
+      </div>
     </div>
   </AppLayout>
 </template>
 
 <script setup>
-import { Link, useForm } from '@inertiajs/vue3'
-import { ref, computed } from 'vue'
+import { useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Components/Layout/AppLayout.vue'
 import Button from '@/Components/Common/Button.vue'
-import Input from '@/Components/Forms/Input.vue'
-import Textarea from '@/Components/Forms/Textarea.vue'
-import { ArrowLeftIcon } from '@heroicons/vue/24/outline'
-import axios from 'axios'
 
 const props = defineProps({
-  branches: {
-    type: Array,
-    default: () => []
-  },
-  students: {
-    type: Array,
-    default: () => []
-  }
+  vouchers: { type: Array, default: () => [] },
+  enrollments: { type: Array, default: () => [] },
 })
-
-const paymentMethods = [
-  { value: 'cash', label: 'Cash' },
-  { value: 'cheque', label: 'Cheque' },
-  { value: 'bank_transfer', label: 'Bank Transfer' },
-  { value: 'online', label: 'Online Payment' },
-  { value: 'card', label: 'Card Payment' }
-]
-
-const pendingFees = ref([])
-const selectedFee = ref(null)
 
 const form = useForm({
-  fee_id: '',
-  student_id: '',
-  branch_id: '',
+  voucher_id: '',
+  student_enrollment_id: '',
+  paid_amount: '',
   payment_date: new Date().toISOString().split('T')[0],
-  amount_paid: '',
   payment_method: 'cash',
-  transaction_id: '',
-  cheque_number: '',
   bank_name: '',
-  receipt_no: 'AUTO-GENERATED',
-  collected_by: '1',
-  notes: ''
+  transaction_ref: '',
+  is_advance: false,
+  notes: '',
 })
-
-const selectedFeeBalance = computed(() => {
-  return selectedFee.value ? Number(selectedFee.value.balance_amount) : 0
-})
-
-const loadStudentFees = async () => {
-  if (!form.student_id) return
-  
-  try {
-    const response = await axios.get(route('fees.dropdown'), {
-      params: {
-        student_id: form.student_id,
-        status: 'pending,partial'
-      }
-    })
-    
-    pendingFees.value = response.data || []
-    
-    // Auto-select student's branch if available
-    const student = props.students.find(s => s.id === form.student_id)
-    if (student && student.branch_id) {
-      form.branch_id = student.branch_id
-    }
-  } catch (error) {
-    console.error('Error loading student fees:', error)
-    pendingFees.value = []
-  }
-}
-
-const onFeeSelect = () => {
-  selectedFee.value = pendingFees.value.find(f => f.id === form.fee_id)
-  if (selectedFee.value) {
-    // Auto-fill with remaining balance
-    form.amount_paid = selectedFee.value.balance_amount
-  }
-}
-
-const getStatusClass = (status) => {
-  const classes = {
-    'pending': 'bg-yellow-100 text-yellow-800',
-    'partial': 'bg-blue-100 text-blue-800',
-    'paid': 'bg-green-100 text-green-800'
-  }
-  return classes[status] || 'bg-gray-100 text-gray-800'
-}
-
-const formatStatus = (status) => {
-  return status.charAt(0).toUpperCase() + status.slice(1)
-}
-
-const formatMonthYear = (month, year) => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  return `${months[month - 1]} ${year}`
-}
 
 const submit = () => {
   form.post(route('fee-payments.store'), {
     preserveScroll: true,
-    onSuccess: () => {
-      // Handle success
-    },
-    onError: (errors) => {
-      console.log('Validation errors:', errors)
-    }
   })
 }
 </script>

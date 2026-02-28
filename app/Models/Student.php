@@ -13,14 +13,15 @@ class Student extends Model
     use SoftDeletes, HasFactory;
 
     protected $fillable = [
-        'parent_id', 'student_name', 'date_of_birth', 'gender',
-        'photo', 'b_form_no', 'blood_group',
-        'student_type', 'previous_school', 'medical_condition', 'is_active',
+        'admission_no', 'parent_id', 'student_name', 'date_of_birth', 'gender',
+        'photo', 'whatsapp_number', 'b_form_no', 'blood_group', 'religion',
+        'is_hafiz', 'student_type', 'previous_school', 'medical_condition', 'is_active',
     ];
 
     protected $casts = [
         'date_of_birth' => 'date',
         'is_active'     => 'boolean',
+        'is_hafiz'      => 'boolean',
     ];
 
     public function parent(): BelongsTo

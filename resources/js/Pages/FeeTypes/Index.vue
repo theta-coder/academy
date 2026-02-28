@@ -1,9 +1,8 @@
 <template>
   <AppLayout>
     <div class="min-h-screen flex flex-col">
-      <!-- Main Content -->
       <div class="flex-1 px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
-        
+
         <!-- Page Header -->
         <div class="mb-4 sm:mb-6 lg:mb-8">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
@@ -11,12 +10,16 @@
               <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Fee Types Management</h1>
               <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">Manage all fee types and categories</p>
             </div>
-            <Link :href="route('fee-types.create')">
-              <Button variant="primary" class="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-200">
-                <PlusIcon class="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                <span class="text-sm sm:text-base">Add New Fee Type</span>
-              </Button>
-            </Link>
+            <Button
+              @click="$inertia.visit(route('fee-types.create'))"
+              variant="primary"
+              class="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all text-sm"
+            >
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Add New Fee Type
+            </Button>
           </div>
         </div>
 
@@ -31,34 +34,34 @@
                 class="w-full text-sm"
               />
             </div>
-            
+
             <div>
               <select
-                v-model="filters.status"
+                v-model="filters.is_active"
                 @change="loadData"
                 class="w-full px-3 sm:px-4 py-2 text-sm border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
+                <option value="1">Active</option>
+                <option value="0">Inactive</option>
               </select>
             </div>
 
             <div>
               <select
-                v-model="filters.branch_id"
+                v-model="filters.fee_category"
                 @change="loadData"
                 class="w-full px-3 sm:px-4 py-2 text-sm border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">All Branches</option>
-                <option v-for="branch in branches" :key="branch.id" :value="branch.id">
-                  {{ branch.name }}
-                </option>
+                <option value="">All Categories</option>
+                <option value="school">School</option>
+                <option value="academy">Academy</option>
+                <option value="both">Both</option>
               </select>
             </div>
 
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="secondary"
               @click="resetFilters"
               class="w-full sm:w-auto shadow-sm hover:shadow-md transition-all duration-200 text-sm"
             >
@@ -69,12 +72,11 @@
 
         <!-- Desktop/Tablet Table View -->
         <div class="hidden md:block bg-white rounded-lg sm:rounded-xl shadow-lg overflow-hidden">
-          <!-- Table Header with Search -->
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50 gap-3">
             <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <span class="text-xs sm:text-sm text-gray-700">Show</span>
-              <select 
-                v-model="perPage" 
+              <select
+                v-model="perPage"
                 @change="changePerPage"
                 class="px-3 sm:px-6 py-1.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
               >
@@ -107,19 +109,16 @@
             <table id="fee-types-table" class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gradient-to-r from-indigo-50 to-blue-50">
                 <tr>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">#</th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Fee Type</th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Code</th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Amount</th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Frequency</th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Branch</th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Mandatory</th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">#</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Fee Name</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Category</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Recurring</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Display Order</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Status</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Actions</th>
                 </tr>
               </thead>
               <tbody class="bg-white text-center divide-y divide-gray-100">
-                <!-- DataTables will populate this -->
               </tbody>
             </table>
           </div>
@@ -133,13 +132,11 @@
 
         <!-- Mobile Card View -->
         <div class="md:hidden space-y-3 sm:space-y-4">
-          <!-- Loading State -->
           <div v-if="mobileLoading" class="flex items-center justify-center py-12 bg-white rounded-lg shadow">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
           </div>
-          
-          <!-- Empty State -->
-          <div v-else-if="mobileFeeTypes.length === 0" class="text-center py-12 bg-white rounded-lg shadow">
+
+          <div v-else-if="mobileItems.length === 0" class="text-center py-12 bg-white rounded-lg shadow">
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
@@ -147,68 +144,55 @@
             <p class="mt-1 text-xs text-gray-400">Try adjusting your filters</p>
           </div>
 
-          <!-- Fee Type Cards -->
-          <div v-else v-for="(feeType, index) in mobileFeeTypes" :key="feeType.id" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+          <div v-else v-for="(item, index) in mobileItems" :key="item.id" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
             <div class="p-4">
-              <!-- Header -->
               <div class="flex items-start justify-between mb-3">
                 <div class="flex-1">
                   <div class="flex items-center gap-2">
                     <span class="text-xs font-semibold text-gray-500">#{{ mobileOffset + index + 1 }}</span>
-                    <h3 class="text-base font-semibold text-gray-900">{{ feeType.name }}</h3>
+                    <h3 class="text-base font-semibold text-gray-900">{{ item.fee_name }}</h3>
                   </div>
-                  <p class="text-xs text-gray-500 mt-0.5">Code: {{ feeType.code }}</p>
                 </div>
-                <span :class="getStatusClass(feeType.status)" class="px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ml-2">
-                  {{ formatStatus(feeType.status) }}
+                <span :class="item.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'" class="px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ml-2">
+                  {{ item.is_active ? 'Active' : 'Inactive' }}
                 </span>
               </div>
 
-              <!-- Details -->
               <div class="space-y-2 border-t border-gray-100 pt-3">
                 <div class="flex items-center text-xs sm:text-sm">
                   <svg class="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                   </svg>
-                  <span class="text-gray-900 font-medium">Rs. {{ Number(feeType.amount).toLocaleString() }}</span>
-                </div>
-                
-                <div class="flex items-center text-xs sm:text-sm">
-                  <svg class="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                  </svg>
-                  <span class="text-gray-600">{{ formatFrequency(feeType.frequency) }}</span>
+                  <span class="text-gray-600">Category: {{ item.fee_category ? item.fee_category.charAt(0).toUpperCase() + item.fee_category.slice(1) : '-' }}</span>
                 </div>
 
                 <div class="flex items-center text-xs sm:text-sm">
                   <svg class="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                   </svg>
-                  <span class="text-gray-600">{{ feeType.branch ? feeType.branch.name : 'N/A' }}</span>
+                  <span class="text-gray-600">{{ item.is_recurring ? 'Recurring (' + (item.recurring_months ?? '-') + ' months)' : 'One-Time' }}</span>
                 </div>
 
                 <div class="flex items-center text-xs sm:text-sm">
                   <svg class="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
                   </svg>
-                  <span :class="feeType.is_mandatory ? 'text-red-600 font-medium' : 'text-gray-600'">
-                    {{ feeType.is_mandatory ? '⚠️ Mandatory' : 'Optional' }}
-                  </span>
+                  <span class="text-gray-600">Order: {{ item.display_order ?? '-' }}</span>
                 </div>
               </div>
 
-              <!-- Actions -->
               <div class="flex gap-2 mt-4 pt-3 border-t border-gray-100">
-                <Link :href="route('fee-types.edit', feeType.id)" class="flex-1">
-                  <button class="w-full px-3 py-2 text-xs sm:text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                    Edit
-                  </button>
-                </Link>
-                <button 
-                  @click="() => { feeTypeToDelete = feeType.id; showDeleteModal = true; }"
+                <button
+                  @click="$inertia.visit(route('fee-types.edit', item.id))"
+                  class="flex-1 px-3 py-2 text-xs sm:text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                  Edit
+                </button>
+                <button
+                  @click="() => { itemToDelete = item.id; showDeleteModal = true; }"
                   class="flex-1 px-3 py-2 text-xs sm:text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center gap-1"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -222,9 +206,9 @@
         </div>
 
         <!-- Mobile Pagination -->
-        <div v-if="mobileFeeTypes.length > 0" class="md:hidden mt-4 bg-white rounded-lg shadow p-3">
+        <div v-if="mobileItems.length > 0" class="md:hidden mt-4 bg-white rounded-lg shadow p-3">
           <div class="flex items-center justify-between">
-            <button 
+            <button
               @click="prevPage"
               :disabled="mobileCurrentPage === 1 || mobileLoading"
               class="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white hover:bg-gray-50 transition-colors flex items-center gap-1"
@@ -234,13 +218,13 @@
               </svg>
               Previous
             </button>
-            
+
             <div class="text-center">
               <div class="text-sm font-medium text-gray-900">Page {{ mobileCurrentPage }} of {{ mobileTotalPages }}</div>
-              <div class="text-xs text-gray-500 mt-0.5">{{ mobileTotal }} total fee types</div>
+              <div class="text-xs text-gray-500 mt-0.5">{{ mobileTotal }} total records</div>
             </div>
-            
-            <button 
+
+            <button
               @click="nextPage"
               :disabled="mobileCurrentPage === mobileTotalPages || mobileLoading"
               class="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white hover:bg-gray-50 transition-colors flex items-center gap-1"
@@ -261,29 +245,29 @@
           <div class="flex items-center">
             <div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-red-100 flex items-center justify-center mr-3 sm:mr-4">
               <svg class="w-5 h-5 sm:w-6 sm:h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
               </svg>
             </div>
             <span class="text-base sm:text-lg font-semibold text-gray-900">Delete Fee Type</span>
           </div>
         </template>
-        
+
         <p class="text-xs sm:text-sm text-gray-600 mt-2">
           Are you sure you want to delete this fee type? This action cannot be undone.
         </p>
 
         <template #footer>
           <div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="secondary"
               @click="showDeleteModal = false"
               class="w-full sm:w-auto px-4 sm:px-6 shadow-sm hover:shadow-md transition-all text-sm"
             >
               Cancel
             </Button>
-            <Button 
-              variant="danger" 
-              @click="confirmDelete" 
+            <Button
+              variant="danger"
+              @click="confirmDelete"
               :loading="deleting"
               class="w-full sm:w-auto px-4 sm:px-6 shadow-md hover:shadow-lg transition-all text-sm"
             >
@@ -299,29 +283,22 @@
 
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { router } from '@inertiajs/vue3'
 import AppLayout from '@/Components/Layout/AppLayout.vue'
 import Button from '@/Components/Common/Button.vue'
 import Input from '@/Components/Forms/Input.vue'
 import Modal from '@/Components/Common/Modal.vue'
-import { PlusIcon } from '@heroicons/vue/24/outline'
 import $ from 'jquery'
 import 'datatables.net'
 import axios from 'axios'
 
-const props = defineProps({
-  branches: {
-    type: Array,
-    default: () => []
-  }
-})
-
+// State
 const showDeleteModal = ref(false)
 const deleting = ref(false)
-const feeTypeToDelete = ref(null)
+const itemToDelete = ref(null)
 const tableSearch = ref('')
 const perPage = ref(10)
-const mobileFeeTypes = ref([])
+const mobileItems = ref([])
 const mobileLoading = ref(true)
 const mobileCurrentPage = ref(1)
 const mobileTotalPages = ref(1)
@@ -331,82 +308,51 @@ let table = null
 
 const filters = reactive({
   search: '',
-  status: '',
-  branch_id: ''
+  is_active: '',
+  fee_category: ''
 })
 
-// Helper functions
-const getStatusClass = (status) => {
-  const classes = {
-    'active': 'bg-green-100 text-green-800',
-    'inactive': 'bg-gray-100 text-gray-800'
-  }
-  return classes[status] || 'bg-gray-100 text-gray-800'
-}
-
-const formatStatus = (status) => {
-  return status.charAt(0).toUpperCase() + status.slice(1)
-}
-
-const formatFrequency = (frequency) => {
-  const frequencies = {
-    'monthly': 'Monthly',
-    'quarterly': 'Quarterly',
-    'half_yearly': 'Half Yearly',
-    'yearly': 'Yearly',
-    'one_time': 'One Time'
-  }
-  return frequencies[frequency] || frequency
-}
-
-// Load mobile data using axios
+// Load mobile data
 const loadMobileData = async () => {
   mobileLoading.value = true
-  
   try {
     const params = {
       page: mobileCurrentPage.value,
       per_page: perPage.value,
       mobile: 1
     }
-    
     if (filters.search) params.search = filters.search
     if (tableSearch.value) params.search = tableSearch.value
-    if (filters.status) params.status = filters.status
-    if (filters.branch_id) params.branch_id = filters.branch_id
-    
+    if (filters.is_active !== '') params.is_active = filters.is_active
+    if (filters.fee_category) params.fee_category = filters.fee_category
+
     const response = await axios.get(route('fee-types.index'), {
       params,
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-        'Accept': 'application/json'
-      }
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
     })
-    
-    if (response.data) {
-      if (response.data.data) {
-        mobileFeeTypes.value = response.data.data
-        mobileCurrentPage.value = response.data.current_page || 1
-        mobileTotalPages.value = response.data.last_page || 1
-        mobileTotal.value = response.data.total || 0
-        mobileOffset.value = response.data.from ? response.data.from - 1 : 0
-      } else if (Array.isArray(response.data)) {
-        mobileFeeTypes.value = response.data
-        mobileTotalPages.value = 1
-        mobileTotal.value = response.data.length
-        mobileOffset.value = 0
-      }
+
+    if (response.data?.data) {
+      mobileItems.value = response.data.data
+      mobileCurrentPage.value = response.data.current_page || 1
+      mobileTotalPages.value = response.data.last_page || 1
+      mobileTotal.value = response.data.total || 0
+      mobileOffset.value = response.data.from ? response.data.from - 1 : 0
+    } else if (Array.isArray(response.data)) {
+      mobileItems.value = response.data
+      mobileTotalPages.value = 1
+      mobileTotal.value = response.data.length
+      mobileOffset.value = 0
     }
   } catch (error) {
     console.error('Error loading mobile data:', error)
-    mobileFeeTypes.value = []
+    mobileItems.value = []
     mobileTotal.value = 0
   } finally {
     mobileLoading.value = false
   }
 }
 
-// Initialize on mount
+// Initialize
 onMounted(() => {
   loadMobileData()
 
@@ -415,21 +361,19 @@ onMounted(() => {
     serverSide: true,
     ajax: {
       url: route('fee-types.index'),
-      data: function(d) {
+      data: function (d) {
         d.search.value = filters.search || tableSearch.value
-        d.status = filters.status
-        d.branch_id = filters.branch_id
+        if (filters.is_active !== '') d.is_active = filters.is_active
+        if (filters.fee_category) d.fee_category = filters.fee_category
       }
     },
     columns: [
       { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-      { data: 'name', name: 'name' },
-      { data: 'code', name: 'code' },
-      { data: 'amount', name: 'amount' },
-      { data: 'frequency', name: 'frequency' },
-      { data: 'branch', name: 'branch' },
-      { data: 'is_mandatory', name: 'is_mandatory', orderable: false },
-      { data: 'status', name: 'status' },
+      { data: 'fee_name', name: 'fee_name' },
+      { data: 'fee_category', name: 'fee_category' },
+      { data: 'is_recurring', name: 'is_recurring', orderable: false },
+      { data: 'display_order', name: 'display_order' },
+      { data: 'is_active', name: 'is_active', orderable: false },
       { data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-center' }
     ],
     pageLength: 10,
@@ -438,7 +382,6 @@ onMounted(() => {
     searching: true,
     info: true,
     responsive: true,
-    
     dom: '<"flex items-center justify-between border-b border-gray-200"<"ml-auto"i>>rt<"flex items-center justify-between px-6 py-4 border-t border-gray-200"<"text-sm text-gray-600"i>p>',
     language: {
       emptyTable: '<div class="text-center py-12 text-gray-500"><svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><p class="mt-2 text-sm font-medium">No fee types found</p></div>',
@@ -454,16 +397,35 @@ onMounted(() => {
       }
     },
     drawCallback: function () {
-      const info = $('#fee-types-table_info')
-      $('#table-info').empty().append(info)
-
-      const paginate = $('#fee-types-table_paginate')
-      $('#table-pagination').empty().append(paginate)
+      $('#table-info').empty().append($('#fee-types-table_info'))
+      $('#table-pagination').empty().append($('#fee-types-table_paginate'))
     }
   })
 })
 
-// Mobile pagination
+// Edit
+window.editFeeType = (ft) => {
+  router.visit(route('fee-types.edit', ft.id))
+}
+
+// Delete
+const confirmDelete = () => {
+  deleting.value = true
+  router.delete(route('fee-types.destroy', itemToDelete.value), {
+    onSuccess: () => {
+      showDeleteModal.value = false
+      deleting.value = false
+      loadData()
+    },
+    onError: () => { deleting.value = false }
+  })
+}
+window.deleteFeeType = (id) => {
+  itemToDelete.value = id
+  showDeleteModal.value = true
+}
+
+// Pagination
 const prevPage = () => {
   if (mobileCurrentPage.value > 1 && !mobileLoading.value) {
     mobileCurrentPage.value--
@@ -471,7 +433,6 @@ const prevPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 }
-
 const nextPage = () => {
   if (mobileCurrentPage.value < mobileTotalPages.value && !mobileLoading.value) {
     mobileCurrentPage.value++
@@ -480,69 +441,37 @@ const nextPage = () => {
   }
 }
 
-// Table search with debounce
+// Debounced search
 let tableSearchTimeout = null
 const tableSearchDebounced = () => {
   clearTimeout(tableSearchTimeout)
-  tableSearchTimeout = setTimeout(() => {
-    loadData()
-  }, 500)
+  tableSearchTimeout = setTimeout(() => loadData(), 500)
 }
 
-// Filter search with debounce
 let searchTimeout = null
 const searchDebounced = () => {
   clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    loadData()
-  }, 500)
+  searchTimeout = setTimeout(() => loadData(), 500)
 }
 
-// Change per page
 const changePerPage = () => {
-  if (table) {
-    table.page.len(perPage.value).draw()
-  }
+  if (table) table.page.len(perPage.value).draw()
   mobileCurrentPage.value = 1
   loadMobileData()
 }
 
-// Reload table
 const loadData = () => {
-  if (table) {
-    table.ajax.reload()
-  }
+  if (table) table.ajax.reload()
   mobileCurrentPage.value = 1
   loadMobileData()
 }
 
-// Reset filters
 const resetFilters = () => {
   filters.search = ''
-  filters.status = ''
-  filters.branch_id = ''
+  filters.is_active = ''
+  filters.fee_category = ''
   tableSearch.value = ''
   loadData()
-}
-
-// Delete fee type
-const confirmDelete = () => {
-  deleting.value = true
-  router.delete(route('fee-types.destroy', feeTypeToDelete.value), {
-    onSuccess: () => {
-      showDeleteModal.value = false
-      deleting.value = false
-      loadData()
-    },
-    onError: () => {
-      deleting.value = false
-    }
-  })
-}
-
-window.deleteFeeType = (id) => {
-  feeTypeToDelete.value = id
-  showDeleteModal.value = true
 }
 </script>
 
@@ -552,14 +481,12 @@ window.deleteFeeType = (id) => {
   color: #4b5563;
   font-weight: 500;
 }
-
 :deep(.dataTables_paginate) {
   display: flex;
   justify-content: flex-end;
   gap: 0.25rem;
   flex-wrap: wrap;
 }
-
 :deep(.paginate_button) {
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
@@ -571,59 +498,45 @@ window.deleteFeeType = (id) => {
   cursor: pointer;
   transition: all 0.2s;
 }
-
 :deep(.paginate_button:hover:not(.disabled)) {
   background: #f3f4f6;
   border-color: #9ca3af;
 }
-
 :deep(.paginate_button.current) {
   background: #2563eb;
   color: white;
   border-color: #2563eb;
 }
-
 :deep(.paginate_button.current:hover) {
   background: #1d4ed8;
   border-color: #1d4ed8;
 }
-
 :deep(.paginate_button.disabled) {
   opacity: 0.5;
   cursor: not-allowed;
   background: #f9fafb;
 }
-
 :deep(#fee-types-table_info),
 :deep(#fee-types-table_paginate) {
   display: none;
 }
-
 #table-info :deep(.dataTables_info),
 #table-pagination :deep(.dataTables_paginate) {
   display: block;
 }
-
 :deep(#fee-types-table tbody td) {
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
 }
-
 @media (min-width: 640px) {
   :deep(#fee-types-table tbody td) {
     padding: 0.75rem 1.5rem;
     font-size: 0.875rem;
   }
 }
-
 @media (max-width: 1024px) {
-  :deep(#fee-types-table) {
-    font-size: 0.813rem;
-  }
-  
+  :deep(#fee-types-table) { font-size: 0.813rem; }
   :deep(#fee-types-table th),
-  :deep(#fee-types-table td) {
-    padding: 0.5rem;
-  }
+  :deep(#fee-types-table td) { padding: 0.5rem; }
 }
 </style>

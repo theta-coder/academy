@@ -1,0 +1,227 @@
+<template>
+  <AppLayout>
+    <div class="min-h-screen flex flex-col">
+      <div class="flex-1 px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
+
+        <div class="mb-4 sm:mb-6 lg:mb-8">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Scholarships</h1>
+              <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">Manage scholarship programs and discount rules</p>
+            </div>
+            <Button @click="$inertia.visit(route('scholarships.create'))" variant="primary" class="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all text-sm">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Add Scholarship
+            </Button>
+          </div>
+        </div>
+
+        <!-- Flash Messages -->
+        <div v-if="showSuccessMessage && $page.props.flash.success" class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+              {{ $page.props.flash.success }}
+            </div>
+            <button @click="showSuccessMessage = false" class="text-green-700 hover:text-green-900"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg></button>
+          </div>
+        </div>
+        <div v-if="showErrorMessage && $page.props.flash.error" class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+              {{ $page.props.flash.error }}
+            </div>
+            <button @click="showErrorMessage = false" class="text-red-700 hover:text-red-900"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg></button>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-lg sm:rounded-xl shadow-md p-4 sm:p-6 mb-4 sm:mb-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div><Input v-model="filters.search" placeholder="Search scholarships..." @input="searchDebounced" class="w-full text-sm" /></div>
+            <div>
+              <select v-model="filters.is_active" @change="loadData" class="w-full px-3 sm:px-4 py-2 text-sm border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="">All Status</option><option value="1">Active</option><option value="0">Inactive</option>
+              </select>
+            </div>
+            <Button variant="secondary" @click="resetFilters" class="w-full sm:w-auto shadow-sm hover:shadow-md transition-all duration-200 text-sm">Reset Filters</Button>
+          </div>
+        </div>
+
+        <!-- Desktop Table -->
+        <div class="hidden md:block bg-white rounded-lg sm:rounded-xl shadow-lg overflow-hidden">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50 gap-3">
+            <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+              <span class="text-xs sm:text-sm text-gray-700">Show</span>
+              <select v-model="perPage" @change="changePerPage" class="px-3 sm:px-6 py-1.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm">
+                <option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option>
+              </select>
+              <span class="text-xs sm:text-sm text-gray-700">entries</span>
+            </div>
+            <div class="w-full sm:w-64">
+              <div class="relative">
+                <input v-model="tableSearch" @input="tableSearchDebounced" type="text" placeholder="Search in table..." class="w-full pl-9 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm" />
+                <svg class="absolute left-2.5 sm:left-3 top-2.5 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table id="data-table" class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gradient-to-r from-indigo-50 to-blue-50">
+                <tr>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">#</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Scholarship Name</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Fee Type</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Discount</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Max Recipients</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Renewable</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Status</th>
+                  <th class="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white text-center divide-y divide-gray-100"></tbody>
+            </table>
+          </div>
+          <div class="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 bg-gray-50 gap-3 sm:gap-4">
+            <div class="text-xs sm:text-sm text-gray-600" id="table-info"></div>
+            <div id="table-pagination"></div>
+          </div>
+        </div>
+
+        <!-- Mobile Cards -->
+        <div class="md:hidden space-y-3 sm:space-y-4">
+          <div v-if="mobileLoading" class="flex items-center justify-center py-12 bg-white rounded-lg shadow"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div></div>
+          <div v-else-if="mobileItems.length === 0" class="text-center py-12 bg-white rounded-lg shadow">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 7l9-5-9-5-9 5 9 5z"/></svg>
+            <p class="mt-2 text-sm font-medium text-gray-500">No scholarships found</p>
+          </div>
+          <div v-else v-for="(item, index) in mobileItems" :key="item.id" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+            <div class="p-4">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex-1"><div class="flex items-center gap-2"><span class="text-xs font-semibold text-gray-500">#{{ mobileOffset + index + 1 }}</span><h3 class="text-base font-semibold text-gray-900">{{ item.scholarship_name }}</h3></div></div>
+                <span :class="item.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'" class="px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ml-2">{{ item.is_active ? 'Active' : 'Inactive' }}</span>
+              </div>
+              <div class="space-y-2 border-t border-gray-100 pt-3">
+                <div class="flex items-center text-xs sm:text-sm"><span class="text-gray-500 w-28">Fee Type:</span><span class="text-gray-900">{{ item.fee_type?.fee_name || '—' }}</span></div>
+                <div class="flex items-center text-xs sm:text-sm"><span class="text-gray-500 w-28">Discount:</span><span class="font-medium text-gray-900">{{ item.discount_type === 'percentage' ? item.discount_value + '%' : 'Rs. ' + item.discount_value }}</span></div>
+                <div class="flex items-center text-xs sm:text-sm"><span class="text-gray-500 w-28">Renewable:</span><span :class="item.is_renewable ? 'text-green-600' : 'text-gray-500'">{{ item.is_renewable ? 'Yes' : 'No' }}</span></div>
+              </div>
+              <div class="flex gap-2 mt-4 pt-3 border-t border-gray-100">
+                <button @click="$inertia.visit(route('scholarships.edit', item.id))" class="flex-1 px-3 py-2 text-xs sm:text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>Edit</button>
+                <button @click="() => { itemToDelete = item.id; showDeleteModal = true; }" class="flex-1 px-3 py-2 text-xs sm:text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Pagination -->
+        <div v-if="mobileItems.length > 0" class="md:hidden mt-4 bg-white rounded-lg shadow p-3">
+          <div class="flex items-center justify-between">
+            <button @click="prevPage" :disabled="mobileCurrentPage === 1 || mobileLoading" class="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white hover:bg-gray-50 transition-colors flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>Previous</button>
+            <div class="text-center"><div class="text-sm font-medium text-gray-900">Page {{ mobileCurrentPage }} of {{ mobileTotalPages }}</div><div class="text-xs text-gray-500 mt-0.5">{{ mobileTotal }} total</div></div>
+            <button @click="nextPage" :disabled="mobileCurrentPage === mobileTotalPages || mobileLoading" class="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white hover:bg-gray-50 transition-colors flex items-center gap-1">Next<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Delete Modal -->
+      <Modal :show="showDeleteModal" @close="showDeleteModal = false">
+        <template #title><div class="flex items-center"><div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-red-100 flex items-center justify-center mr-3 sm:mr-4"><svg class="w-5 h-5 sm:w-6 sm:h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></div><span class="text-base sm:text-lg font-semibold text-gray-900">Delete Scholarship</span></div></template>
+        <p class="text-xs sm:text-sm text-gray-600 mt-2">Are you sure you want to delete this scholarship? This action cannot be undone.</p>
+        <template #footer><div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3"><Button variant="secondary" @click="showDeleteModal = false" class="w-full sm:w-auto px-4 sm:px-6 shadow-sm hover:shadow-md transition-all text-sm">Cancel</Button><Button variant="danger" @click="confirmDelete" :loading="deleting" class="w-full sm:w-auto px-4 sm:px-6 shadow-md hover:shadow-lg transition-all text-sm"><span v-if="!deleting">Delete</span><span v-else>Deleting...</span></Button></div></template>
+      </Modal>
+    </div>
+  </AppLayout>
+</template>
+
+<script setup>
+import { ref, onMounted, reactive, watch } from 'vue'
+import { router, usePage } from '@inertiajs/vue3'
+import AppLayout from '@/Components/Layout/AppLayout.vue'
+import Button from '@/Components/Common/Button.vue'
+import Input from '@/Components/Forms/Input.vue'
+import Modal from '@/Components/Common/Modal.vue'
+import $ from 'jquery'
+import 'datatables.net'
+import axios from 'axios'
+
+const showDeleteModal = ref(false), deleting = ref(false), itemToDelete = ref(null), tableSearch = ref(''), perPage = ref(10)
+const mobileItems = ref([]), mobileLoading = ref(true), mobileCurrentPage = ref(1), mobileTotalPages = ref(1), mobileTotal = ref(0), mobileOffset = ref(0)
+const showSuccessMessage = ref(true), showErrorMessage = ref(true)
+let table = null
+const filters = reactive({ search: '', is_active: '' })
+
+const page = usePage()
+watch(() => page.props.flash, (f) => {
+  if (f.success) { showSuccessMessage.value = true; setTimeout(() => { showSuccessMessage.value = false }, 10000) }
+  if (f.error) { showErrorMessage.value = true; setTimeout(() => { showErrorMessage.value = false }, 10000) }
+}, { deep: true, immediate: true })
+
+const loadMobileData = async () => {
+  mobileLoading.value = true
+  try {
+    const params = { page: mobileCurrentPage.value, per_page: perPage.value, mobile: 1 }
+    if (filters.search) params.search = filters.search
+    if (tableSearch.value) params.search = tableSearch.value
+    if (filters.is_active !== '') params.is_active = filters.is_active
+    const response = await axios.get(route('scholarships.index'), { params, headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
+    if (response.data?.data) { mobileItems.value = response.data.data; mobileCurrentPage.value = response.data.current_page || 1; mobileTotalPages.value = response.data.last_page || 1; mobileTotal.value = response.data.total || 0; mobileOffset.value = response.data.from ? response.data.from - 1 : 0 }
+  } catch (e) { console.error('Error:', e); mobileItems.value = [] }
+  finally { mobileLoading.value = false }
+}
+
+onMounted(() => {
+  loadMobileData()
+  table = $('#data-table').DataTable({
+    processing: true, serverSide: true,
+    ajax: { url: route('scholarships.index'), data: function(d) { d.search.value = filters.search || tableSearch.value; if (filters.is_active !== '') d.is_active = filters.is_active } },
+    columns: [
+      { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+      { data: 'scholarship_name', name: 'scholarship_name' },
+      { data: 'fee_type', name: 'fee_type', orderable: false },
+      { data: 'discount', name: 'discount', orderable: false },
+      { data: 'max_recipients', name: 'max_recipients' },
+      { data: 'is_renewable', name: 'is_renewable' },
+      { data: 'is_active', name: 'is_active' },
+      { data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-center' }
+    ],
+    pageLength: 10, lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]], order: [[1, 'asc']],
+    searching: true, info: true, responsive: true,
+    dom: '<"flex items-center justify-between border-b border-gray-200"<"ml-auto"i>>rt<"flex items-center justify-between px-6 py-4 border-t border-gray-200"<"text-sm text-gray-600"i>p>',
+    language: {
+      emptyTable: '<div class="text-center py-12 text-gray-500"><p class="mt-2 text-sm font-medium">No scholarships found</p></div>',
+      info: 'Showing _START_ to _END_ of _TOTAL_ entries', infoEmpty: 'Showing 0 to 0 of 0 entries',
+      processing: '<div class="flex items-center justify-center py-8"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div></div>',
+      paginate: { next: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>', previous: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>' }
+    },
+    drawCallback: function () { $('#data-table_info').appendTo('#table-info'); $('#data-table_paginate').appendTo('#table-pagination') }
+  })
+})
+
+const confirmDelete = () => { deleting.value = true; router.delete(route('scholarships.destroy', itemToDelete.value), { onSuccess: () => { showDeleteModal.value = false; deleting.value = false; loadData() }, onError: () => { deleting.value = false } }) }
+window.editScholarship = (item) => { router.visit(route('scholarships.edit', item.id)) }
+window.deleteScholarship = (id) => { itemToDelete.value = id; showDeleteModal.value = true }
+const prevPage = () => { if (mobileCurrentPage.value > 1) { mobileCurrentPage.value--; loadMobileData(); window.scrollTo({ top: 0, behavior: 'smooth' }) } }
+const nextPage = () => { if (mobileCurrentPage.value < mobileTotalPages.value) { mobileCurrentPage.value++; loadMobileData(); window.scrollTo({ top: 0, behavior: 'smooth' }) } }
+let tableSearchTimeout = null; const tableSearchDebounced = () => { clearTimeout(tableSearchTimeout); tableSearchTimeout = setTimeout(() => { loadData() }, 500) }
+let searchTimeout = null; const searchDebounced = () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { loadData() }, 500) }
+const changePerPage = () => { if (table) table.page.len(perPage.value).draw(); mobileCurrentPage.value = 1; loadMobileData() }
+const loadData = () => { if (table) table.ajax.reload(); mobileCurrentPage.value = 1; loadMobileData() }
+const resetFilters = () => { filters.search = ''; filters.is_active = ''; tableSearch.value = ''; loadData() }
+</script>
+
+<style scoped>
+:deep(.dataTables_info) { font-size: 0.875rem; color: #4b5563; font-weight: 500; }
+:deep(.dataTables_paginate) { display: flex; justify-content: flex-end; gap: 0.25rem; flex-wrap: wrap; }
+:deep(.paginate_button) { padding: 0.5rem 0.75rem; font-size: 0.875rem; font-weight: 500; border: 1px solid #d1d5db; border-radius: 0.5rem; background: white; color: #374151; cursor: pointer; transition: all 0.2s; }
+:deep(.paginate_button:hover:not(.disabled)) { background: #f3f4f6; border-color: #9ca3af; }
+:deep(.paginate_button.current) { background: #2563eb; color: white; border-color: #2563eb; }
+:deep(.paginate_button.current:hover) { background: #1d4ed8; border-color: #1d4ed8; }
+:deep(.paginate_button.disabled) { opacity: 0.5; cursor: not-allowed; background: #f9fafb; }
+:deep(#data-table_info), :deep(#data-table_paginate) { display: none; }
+#table-info :deep(.dataTables_info), #table-pagination :deep(.dataTables_paginate) { display: block; }
+:deep(#data-table tbody td) { padding: 0.5rem 0.75rem; font-size: 0.875rem; }
+@media (min-width: 640px) { :deep(#data-table tbody td) { padding: 0.75rem 1.5rem; } }
+</style>
