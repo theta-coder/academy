@@ -126,7 +126,7 @@
                 </div>
                 <div v-if="item.applies_to" class="flex items-center text-xs sm:text-sm">
                   <span class="text-gray-500 w-28">Applies To:</span>
-                  <span class="text-gray-600">{{ item.applies_to }}</span>
+                  <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800">{{ item.applies_to === 'all_fees' ? 'All Fees' : item.applies_to === 'monthly_only' ? 'Monthly Only' : 'Specific Fees' }}</span>
                 </div>
               </div>
               <div class="flex gap-2 mt-4 pt-3 border-t border-gray-100">

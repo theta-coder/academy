@@ -1,0 +1,46 @@
+{
+    "missing_models": [
+        {
+            "table": "previous_year_balances",
+            "expected_model": "PreviousYearBalance"
+        },
+        {
+            "table": "role_permissions",
+            "expected_model": "RolePermission"
+        }
+    ],
+    "missing_controllers": [
+        {
+            "model": "BranchClass",
+            "expected_controller": "BranchClassController"
+        },
+        {
+            "model": "Classes",
+            "expected_controller": "ClassesController"
+        },
+        {
+            "model": "FeeApprovalRequest",
+            "expected_controller": "FeeApprovalRequestController"
+        },
+        {
+            "model": "FeeReminder",
+            "expected_controller": "FeeReminderController"
+        },
+        {
+            "model": "FeeStructureChangeLog",
+            "expected_controller": "FeeStructureChangeLogController"
+        },
+        {
+            "model": "ParentModel",
+            "expected_controller": "ParentModelController"
+        },
+        {
+            "model": "PreviousYearBalance",
+            "expected_controller": "PreviousYearBalanceController"
+        },
+        {
+            "model": "RolePermission",
+            "expected_controller": "RolePermissionController"
+        }
+    ]
+}

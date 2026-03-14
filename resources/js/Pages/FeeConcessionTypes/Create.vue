@@ -37,7 +37,12 @@
               </div>
               <div>
                 <label for="applies_to" class="block text-sm font-medium text-gray-700 mb-2">Applies To</label>
-                <input id="applies_to" v-model="form.applies_to" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="e.g., Tuition Fee" />
+                <select id="applies_to" v-model="form.applies_to" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" :class="{ 'border-red-500': form.errors.applies_to }">
+                  <option value="">Select Option</option>
+                  <option value="all_fees">All Fees</option>
+                  <option value="monthly_only">Monthly Only</option>
+                  <option value="specific">Specific Fees</option>
+                </select>
                 <p v-if="form.errors.applies_to" class="mt-1 text-sm text-red-600">{{ form.errors.applies_to }}</p>
               </div>
               <div class="md:col-span-2">

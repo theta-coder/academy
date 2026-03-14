@@ -13,8 +13,9 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label for="child_number" class="block text-sm font-medium text-gray-700 mb-2">Child Number <span class="text-red-500">*</span></label>
-                <input id="child_number" v-model="form.child_number" type="number" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" :class="{ 'border-red-500': form.errors.child_number }" placeholder="e.g., 2 (for 2nd child)" required />
+                <input id="child_number" v-model="form.child_number" type="number" min="1" max="10" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" :class="{ 'border-red-500': form.errors.child_number }" placeholder="e.g., 2 (for 2nd child)" required />
                 <p v-if="form.errors.child_number" class="mt-1 text-sm text-red-600">{{ form.errors.child_number }}</p>
+                <p class="mt-1 text-xs text-gray-500">Enter child order (1-10 only)</p>
               </div>
               <div>
                 <label for="applies_to_fee_type_id" class="block text-sm font-medium text-gray-700 mb-2">Applies To Fee Type</label>
@@ -51,10 +52,26 @@
 
 <script setup>
 import { useForm } from '@inertiajs/vue3'
+import { watch } from 'vue'
 import AppLayout from '@/Components/Layout/AppLayout.vue'
 import Button from '@/Components/Common/Button.vue'
 
 const props = defineProps({ feeTypes: { type: Array, default: () => [] } })
-const form = useForm({ child_number: '', discount_type: '', discount_value: '', applies_to_fee_type_id: '', description: '', is_active: true })
-const submit = () => { form.post(route('sibling-discount-rules.store'), { preserveScroll: true }) }
+
+const form = useForm({ 
+    child_number: '', 
+    discount_type: '', 
+    discount_value: '', 
+    applies_to_fee_type_id: '', 
+    description: '', 
+    is_active: true 
+})
+
+
+
+const submit = () => { 
+    form.post(route('sibling-discount-rules.store'), { 
+        preserveScroll: true
+    }) 
+}
 </script>

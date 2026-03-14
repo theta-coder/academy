@@ -37,7 +37,12 @@
               </div>
               <div>
                 <label for="applies_to" class="block text-sm font-medium text-gray-700 mb-2">Applies To</label>
-                <input id="applies_to" v-model="form.applies_to" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                <select id="applies_to" v-model="form.applies_to" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" :class="{ 'border-red-500': form.errors.applies_to }">
+                  <option value="">Select Option</option>
+                  <option value="all_fees">All Fees</option>
+                  <option value="monthly_only">Monthly Only</option>
+                  <option value="specific">Specific Fees</option>
+                </select>
                 <p v-if="form.errors.applies_to" class="mt-1 text-sm text-red-600">{{ form.errors.applies_to }}</p>
               </div>
               <div class="md:col-span-2">
@@ -70,18 +75,19 @@ import { useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Components/Layout/AppLayout.vue'
 import Button from '@/Components/Common/Button.vue'
 
-const props = defineProps({ feeConcessionType: { type: Object, required: true } })
+const props = defineProps({ concessionType: { type: Object, required: true } })
 
 const form = useForm({
-  concession_name: props.feeConcessionType.concession_name,
-  discount_type: props.feeConcessionType.discount_type,
-  default_discount_value: props.feeConcessionType.default_discount_value,
-  applies_to: props.feeConcessionType.applies_to,
-  description: props.feeConcessionType.description,
-  is_active: props.feeConcessionType.is_active,
+  concession_name: props.concessionType.concession_name,
+  discount_type: props.concessionType.discount_type,
+  default_discount_value: props.concessionType.default_discount_value,
+  applies_to: props.concessionType.applies_to,
+  description: props.concessionType.description,
+  is_active: props.concessionType.is_active,
 })
 
 const submit = () => {
-  form.put(route('fee-concession-types.update', props.feeConcessionType.id), { preserveScroll: true })
+  form.put(route('fee-concession-types.update', props.concessionType.id), { preserveScroll: true })
 }
+
 </script>

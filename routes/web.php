@@ -12,7 +12,6 @@ use App\Http\Controllers\ClassSectionController;
 use App\Http\Controllers\ClassController;
 
 use App\Http\Controllers\StudentController;
-use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\ParentController;
 use App\Http\Controllers\FeeTypeController;
 use App\Http\Controllers\FeeStructureController;
@@ -40,6 +39,10 @@ use App\Http\Controllers\StudentFeeConcessionController;
 use App\Http\Controllers\StudentScholarshipController;
 use App\Http\Controllers\StudentInstallmentAssignmentController;
 use App\Http\Controllers\InstallmentScheduleController;
+use App\Http\Controllers\FeeReminderController;
+use App\Http\Controllers\FeeApprovalRequestController;
+use App\Http\Controllers\FeeStructureChangeLogController;
+use App\Http\Controllers\PreviousYearBalanceController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -155,8 +158,6 @@ Route::get('subject-groups/{id}/group-subjects', [SubjectGroupController::class,
     ->name('subject-groups.group-subjects');
 Route::get('/subject-groups/subjects', [SubjectGroupController::class, 'getAllSubjects'])
     ->name('subject-groups.subjects');
-Route::get('/subject-groups/{subjectGroup}/group-subjects', [SubjectGroupController::class, 'getGroupSubjects'])
-    ->name('subject-groups.group-subjects');
 
 
 
@@ -176,10 +177,6 @@ Route::get('/subject-groups/{subjectGroup}/group-subjects', [SubjectGroupControl
     Route::get('api/students/dropdown', [StudentController::class, 'dropdown'])
         ->name('students.dropdown');
 
-    // Teachers
-    Route::resource('teachers', TeacherController::class);
-    Route::get('api/teachers/dropdown', [TeacherController::class, 'dropdown'])
-        ->name('teachers.dropdown');
 
     // Parents
     Route::resource('parents', ParentController::class);
@@ -285,6 +282,56 @@ Route::get('/subject-groups/{subjectGroup}/group-subjects', [SubjectGroupControl
     Route::resource('academy-payment-accounts', AcademyPaymentAccountController::class);
     Route::get('api/academy-payment-accounts/dropdown', [AcademyPaymentAccountController::class, 'dropdown'])
         ->name('academy-payment-accounts.dropdown');
+
+    // Missing Modules added dynamically
+    Route::resource('cheque-tracking', \App\Http\Controllers\ChequeTrackingController::class);
+    Route::resource('online-payment-proofs', \App\Http\Controllers\OnlinePaymentProofController::class);
+    Route::resource('fee-voucher-edit-history', \App\Http\Controllers\FeeVoucherEditHistoryController::class);
+    Route::resource('voucher-discount-breakdowns', \App\Http\Controllers\VoucherDiscountBreakdownController::class);
+
+    // Fee Reminders
+    Route::resource('fee-reminders', FeeReminderController::class);
+    Route::get('api/fee-reminders/enrollments-by-student/{studentId}', [FeeReminderController::class, 'getEnrollmentsByStudent'])
+        ->name('fee-reminders.enrollments-by-student');
+    Route::get('api/fee-reminders/unpaid-vouchers/{enrollmentId}', [FeeReminderController::class, 'getUnpaidVouchers'])
+        ->name('fee-reminders.unpaid-vouchers');
+
+    // Fee Approval Requests
+    Route::resource('fee-approval-requests', FeeApprovalRequestController::class);
+    Route::post('fee-approval-requests/{feeApprovalRequest}/approve', [FeeApprovalRequestController::class, 'approve'])
+        ->name('fee-approval-requests.approve');
+    Route::post('fee-approval-requests/{feeApprovalRequest}/reject', [FeeApprovalRequestController::class, 'reject'])
+        ->name('fee-approval-requests.reject');
+    Route::get('api/fee-approval-requests/enrollments-by-student/{studentId}', [FeeApprovalRequestController::class, 'getEnrollmentsByStudent'])
+        ->name('fee-approval-requests.enrollments-by-student');
+    Route::get('api/fee-approval-requests/vouchers-by-enrollment/{enrollmentId}', [FeeApprovalRequestController::class, 'getVouchersByEnrollment'])
+        ->name('fee-approval-requests.vouchers-by-enrollment');
+    Route::get('api/fee-approval-requests/my-requests', [FeeApprovalRequestController::class, 'myRequests'])
+        ->name('fee-approval-requests.my-requests');
+    Route::get('api/fee-approval-requests/pending-approval', [FeeApprovalRequestController::class, 'pendingForApproval'])
+        ->name('fee-approval-requests.pending-approval');
+
+    // Fee Structure Change Log
+    Route::resource('fee-structure-change-logs', FeeStructureChangeLogController::class);
+    Route::get('api/fee-structure-change-logs/structure-details/{structureId}', [FeeStructureChangeLogController::class, 'getFeeStructureDetails'])
+        ->name('fee-structure-change-logs.structure-details');
+    Route::get('api/fee-structure-change-logs/history-by-structure/{structureId}', [FeeStructureChangeLogController::class, 'historyByStructure'])
+        ->name('fee-structure-change-logs.history-by-structure');
+    Route::get('api/fee-structure-change-logs/recent-changes', [FeeStructureChangeLogController::class, 'recentChanges'])
+        ->name('fee-structure-change-logs.recent-changes');
+
+    // Previous Year Balances
+    Route::resource('previous-year-balances', PreviousYearBalanceController::class);
+    Route::get('api/previous-year-balances/enrollments-by-student/{studentId}', [PreviousYearBalanceController::class, 'getEnrollmentsByStudent'])
+        ->name('previous-year-balances.enrollments-by-student');
+    Route::get('api/previous-year-balances/student-balances/{studentId}', [PreviousYearBalanceController::class, 'studentBalances'])
+        ->name('previous-year-balances.student-balances');
+    Route::post('previous-year-balances/carry-forward-bulk', [PreviousYearBalanceController::class, 'carryForwardBulk'])
+        ->name('previous-year-balances.carry-forward-bulk');
+    Route::post('previous-year-balances/{previousYearBalance}/record-recovery', [PreviousYearBalanceController::class, 'recordRecovery'])
+        ->name('previous-year-balances.record-recovery');
+    Route::get('api/previous-year-balances/summary', [PreviousYearBalanceController::class, 'summary'])
+        ->name('previous-year-balances.summary');
 
     // ==========================================
     // ACADEMIC SYSTEM ROUTES

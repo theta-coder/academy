@@ -82,6 +82,16 @@ class FeeVoucher extends Model
         return $this->hasOne(StudentInstallmentAssignment::class, 'fee_voucher_id');
     }
 
+    public function editHistory(): HasMany
+    {
+        return $this->hasMany(FeeVoucherEditHistory::class, 'voucher_id');
+    }
+
+    public function approvalRequests(): HasMany
+    {
+        return $this->hasMany(FeeApprovalRequest::class, 'voucher_id');
+    }
+
     public function scopePending($query)
     {
         return $query->where('status', 'pending');

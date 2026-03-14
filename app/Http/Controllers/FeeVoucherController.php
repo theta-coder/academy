@@ -7,9 +7,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use App\Services\FeeGenerationService;
 
 class FeeVoucherController extends Controller
 {
+    protected $feeGenerationService;
+
+    public function __construct(FeeGenerationService $feeGenerationService)
+    {
+        $this->feeGenerationService = $feeGenerationService;
+    }
+
     // -------------------------------------------------------------------------
     // Public Routes
     // -------------------------------------------------------------------------
@@ -25,6 +33,37 @@ class FeeVoucherController extends Controller
         }
 
         return Inertia::render('FeeVouchers/Index');
+    }
+
+    /**
+     * Trigger massive generation
+     */
+    public function generateMonthlyVouchers(Request $request)
+    {
+        $request->validate([
+            'branch_id' => 'required|exists:branches,id',
+            'academic_year_id' => 'required|exists:academic_years,id',
+            'month' => 'required|integer|between:1,12',
+            'year' => 'required|integer'
+        ]);
+
+        $result = $this->feeGenerationService->generateMonthlyVouchers(
+            $request->branch_id,
+            $request->academic_year_id,
+            $request->month,
+            $request->year
+        );
+
+        if ($result['success']) {
+            return redirect()->back()->with('success', $result['message']);
+        }
+        return redirect()->back()->with('error', $result['message']);
+    }
+
+    public function recalculate(FeeVoucher $feeVoucher)
+    {
+        $this->feeGenerationService->recalculateVoucher($feeVoucher);
+        return redirect()->back()->with('success', 'Voucher recalculated successfully');
     }
 
     public function create()

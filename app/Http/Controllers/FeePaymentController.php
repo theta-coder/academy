@@ -7,9 +7,17 @@ use App\Models\FeeVoucher;
 use App\Models\StudentEnrollment;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Services\FeePaymentService;
 
 class FeePaymentController extends Controller
 {
+    protected $feePaymentService;
+
+    public function __construct(FeePaymentService $feePaymentService)
+    {
+        $this->feePaymentService = $feePaymentService;
+    }
+
     public function index(Request $request)
     {
         if ($request->has('mobile') || ($request->ajax() && $request->get('page'))) {
@@ -188,39 +196,25 @@ class FeePaymentController extends Controller
             'student_enrollment_id' => 'required|exists:student_enrollments,id',
             'paid_amount'           => 'required|numeric|min:0.01',
             'payment_date'          => 'required|date',
-            'payment_method'        => 'required|in:cash,bank_transfer,cheque,online',
+            'payment_method'        => 'required|in:cash,bank_transfer,cheque,online,jazzcash,easypaisa,sadapay,raast,advance_adjusted',
             'bank_name'             => 'nullable|string|max:100',
             'transaction_ref'       => 'nullable|string|max:100',
             'is_advance'            => 'boolean',
             'notes'                 => 'nullable|string',
         ]);
 
-        // Generate receipt number: RCP-2026-00001
-        $validated['receipt_no'] = $this->generateReceiptNumber();
-        $validated['received_by'] = auth()->id();
+        $result = $this->feePaymentService->processPayment($validated);
 
-        $payment = FeePayment::create($validated);
-
-        // Update voucher paid_amount and status
-        if (!$validated['is_advance']) {
-            $voucher = FeeVoucher::find($validated['voucher_id']);
-            if ($voucher) {
-                $voucher->paid_amount += $validated['paid_amount'];
-                $voucher->remaining_amount = $voucher->net_amount - $voucher->paid_amount;
-
-                if ($voucher->paid_amount >= $voucher->net_amount) {
-                    $voucher->status = 'paid';
-                } elseif ($voucher->paid_amount > 0) {
-                    $voucher->status = 'partial';
-                }
-
-                $voucher->save();
-            }
+        if ($result['success']) {
+            return redirect()
+                ->route('fee-payments.index')
+                ->with('success', $result['message']);
         }
 
         return redirect()
-            ->route('fee-payments.index')
-            ->with('success', 'Payment recorded successfully!');
+            ->back()
+            ->withInput()
+            ->with('error', $result['message']);
     }
 
     public function update(Request $request, FeePayment $feePayment)

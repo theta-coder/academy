@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"C:\\\\htdocs\\\\htdocs\\\\academy-management\" && php artisan migrate:status 2>&1 | head -100)"
+    ]
+  }
+}

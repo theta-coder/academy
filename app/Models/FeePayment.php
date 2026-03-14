@@ -61,6 +61,11 @@ class FeePayment extends Model
         return $this->hasOne(InstallmentSchedule::class, 'payment_id');
     }
 
+    public function chequeTracking(): HasOne
+    {
+        return $this->hasOne(ChequeTracking::class, 'payment_id');
+    }
+
     public function scopeAdvance($query)
     {
         return $query->where('is_advance', true);

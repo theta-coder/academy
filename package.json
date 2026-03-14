@@ -27,6 +27,7 @@
         "datatables.net": "^2.3.7",
         "datatables.net-dt": "^2.3.7",
         "jquery": "^4.0.0",
-        "lodash": "^4.17.23"
+        "lodash": "^4.17.23",
+        "sweetalert2": "^11.26.22"
     }
 }

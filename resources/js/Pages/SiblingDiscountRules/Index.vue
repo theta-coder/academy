@@ -147,8 +147,8 @@ onMounted(() => {
 })
 
 const confirmDelete = () => { deleting.value = true; router.delete(route('sibling-discount-rules.destroy', itemToDelete.value), { onSuccess: () => { showDeleteModal.value = false; deleting.value = false; loadData() }, onError: () => { deleting.value = false } }) }
-window.editRule = (item) => { router.visit(route('sibling-discount-rules.edit', item.id)) }
-window.deleteRule = (id) => { itemToDelete.value = id; showDeleteModal.value = true }
+window.editSiblingRule = (item) => { router.visit(route('sibling-discount-rules.edit', item.id)) }
+window.deleteSiblingRule = (id) => { itemToDelete.value = id; showDeleteModal.value = true }
 const prevPage = () => { if (mobileCurrentPage.value > 1) { mobileCurrentPage.value--; loadMobileData(); window.scrollTo({ top: 0, behavior: 'smooth' }) } }
 const nextPage = () => { if (mobileCurrentPage.value < mobileTotalPages.value) { mobileCurrentPage.value++; loadMobileData(); window.scrollTo({ top: 0, behavior: 'smooth' }) } }
 let tableSearchTimeout = null; const tableSearchDebounced = () => { clearTimeout(tableSearchTimeout); tableSearchTimeout = setTimeout(() => { loadData() }, 500) }
